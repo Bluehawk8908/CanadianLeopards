@@ -614,12 +614,9 @@ namespace CanadianLeopards
                     }                    
 
                     GameObject hull_tac_rear = new GameObject("tactical sign rear");
-                    hull_tac_rear.transform.parent = active_hull.transform;
-                    hull_tac_rear.AddComponent<MeshFilter>();
-                    hull_tac_rear.AddComponent<MeshRenderer>();
-                    hull_tac_rear.GetComponent<MeshFilter>().mesh = hull_tac_front.GetComponent<MeshFilter>().mesh;
-                    hull_tac_rear.GetComponent<MeshRenderer>().material = hull_tac_front.GetComponent<MeshRenderer>().material;
+                    hull_tac_rear.transform.parent = active_hull.transform;                    
                     hull_tac_rear.transform.position = active_hull.transform.position;
+                    NewQuad(hull_tac_rear, numbers.material, tac);
                     if (leo1a3)
                     {
                         hull_tac_rear.transform.localPosition += new Vector3(-0.88f, 5.418f, 1.4f);
@@ -635,12 +632,8 @@ namespace CanadianLeopards
 
                     GameObject mlc_decal = new GameObject("MLC decal");
                     mlc_decal.transform.parent = active_hull.transform;
-                    mlc_decal.AddComponent<MeshFilter>();
-                    mlc_decal.AddComponent<MeshRenderer>();
-                    mlc_decal.GetComponent<MeshRenderer>().material = numbers.material;
-                    mlc_decal.GetComponent<MeshRenderer>().material.mainTexture = mlc;
-                    mlc_decal.GetComponent<MeshFilter>().mesh = hull_tac_front.GetComponent<MeshFilter>().mesh;
                     mlc_decal.transform.position = active_hull.transform.position;
+                    NewQuad(mlc_decal, numbers.material, mlc);
                     if (leo1a3)
                     {
                         mlc_decal.transform.localPosition += new Vector3(0.84f, -0.62f, 1.48f);
