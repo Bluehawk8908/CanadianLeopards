@@ -8,7 +8,9 @@ Ammunition options are: "historical" per Canadian armour in the 80s (APDS or APF
 
 Cosmetic options allow the player to keep the default German base coat of "Gelboliv" (yellow-olive), which despite its name appears rather gray; or apply a NATO CARC Green colour on the older 1A1's. The 1A3 comes in olive drab. Additionally the chances that some vehicles appear in NATO "three-colour" camouflage can be disabled. Maple leaves and callsigns may be outlined in white or kept simply black. 
 
-As per version 1.2, German-style tactical symbols may be worn, as they appear in some period photos on the bottom left corner of the upper front plate and rear tool box, taking the form of a NATO map symbol for an armoured battalion marked 'X 4' (for the 4th Brgiade) on the right-hand side. Additionally a Military Load Classification number of 46 is sometimes worn on the hull front, available in white outline or plain black. These two additions may be disabled in the config file.
+As per version 1.2, German-style tactical symbols may be worn, as they appear in some period photos on the bottom left corner of the upper front plate and rear tool box, taking the form of a NATO map symbol for an armoured battalion marked 'X 4' (for the 4th Brgiade) on the right-hand side. Additionally a Military Load Classification number of 46 is sometimes worn on the hull front, available in white outline or plain black. These two additions may be disabled in the config file.  
+
+Per version 1.3.1, the new Leopard 1A4 may be converted (reverted?) into a C1, controlled in the config file (excluded by default).  
 
 ***Installation***  
 This mod requires MelonLoader and is intended to be used with Version 0.6.1!
@@ -33,5 +35,6 @@ This mod does not copy or incorporate any material wholesale from other modders 
 1.1 - Hotfix   
 1.2 - Added tactical symbols and MLC number  
 1.3 - C1s based on the Leopard 1A3 added to the Grafenwöhr showcase  
+1.3.1 - Compatibility patch for GHPC 20260507
 ![New decals per version 1.2](https://i.imgur.com/pXAMOAA.jpeg)
 
