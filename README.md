@@ -16,7 +16,7 @@ Per version 1.3.1, the new Leopard 1A4 may be converted (reverted?) into a C1, c
 This mod requires MelonLoader and is intended to be used with Version 0.6.1!
 This mod does NOT require the Vehicle Preloader or Texture Loader.
 
-To install, simply extract the "CanadianLeopards.dll" file and the "CanadianLeopards" folder into the /mods/ folder. If done correctly, there should only be PNGs in the /mods/CanadianLeopards/ directory and the DLL file is separate. If upgrading from 1.2 to 1.3, you only need to update the DLL.
+To install, simply extract the "CanadianLeopards.dll" file and the "CanadianLeopards" folder into the /mods/ folder. If done correctly, there should only be PNGs in the /mods/CanadianLeopards/ directory and the DLL file is separate. If upgrading from 1.2 to 1.3 or from 1.3 to 1.3.1, you only need to update the DLL.
 
 ***Acknowledgements***  
 Programming: Bluehawk  
