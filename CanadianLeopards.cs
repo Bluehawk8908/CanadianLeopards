@@ -34,6 +34,7 @@ namespace CanadianLeopards
         public static MelonPreferences_Entry<bool> decals_outlined;
         public static MelonPreferences_Entry<bool> additional_decals;
         public static MelonPreferences_Entry<bool> showcase_extras;
+        public static MelonPreferences_Entry<bool> exclude_1A4;
         public static MelonPreferences_Entry<bool> mute_logger;
 
         public static GameObject american_crew_voice = null;
@@ -61,6 +62,9 @@ namespace CanadianLeopards
 
             showcase_extras = cfg.CreateEntry<bool>("Add 1A3s to Showcase", true);
             showcase_extras.Comment = "Adds 1A3-based Leopard C1s to the Grafenwoehr Showcase.";
+
+            exclude_1A4 = cfg.CreateEntry<bool>("Exclude 1A4 from conversion", true);
+            exclude_1A4.Comment = "The Leopard 1A4 will remain in German service and retain all its unique features.";
 
             mute_logger = cfg.CreateEntry<bool>("Mute log messages", false);
             mute_logger.Comment = "Mutes log messages in the MelonLoader console.";
@@ -214,12 +218,13 @@ namespace CanadianLeopards
                 string short_name = vehicle_go.name.Substring(0, 3);
                 if (short_name != "LEO") { continue; }
                 vehicle_go.AddComponent<CanLepConverted>();
-                if (!mute_logger.Value) { MelonLogger.Msg("Found vic named: " + vehicle_go.name); }
-                vehicle._friendlyName = "Leopard C1";  //New display name
-                bool leo1a3 = false;
+                if (!mute_logger.Value) { MelonLogger.Msg("Found vic named: " + vehicle_go.name); }                
+                bool leo1a3 = false;               
                 short_name = vehicle_go.name.Substring(0, 6);
-                if (short_name == "LEO1A3") { leo1a3 = true; }
-                       
+                if (short_name == "LEO1A3" || short_name == "LEO1A4") { leo1a3 = true; }
+                if (short_name == "LEO1A4" && exclude_1A4.Value == true) { continue; }
+                vehicle._friendlyName = "Leopard C1";  //New display name
+
                 vehicle.transform.Find("DE Tank Voice").gameObject.SetActive(false); //Adding US Voices
                 GameObject new_voice = GameObject.Instantiate(american_crew_voice, vehicle.transform);                
                 new_voice.transform.localPosition = new Vector3(0, 0, 0);
@@ -244,7 +249,7 @@ namespace CanadianLeopards
                 laser_dest._fullHealth = 5f;
                 laser_dest._pressureTolerance = 1f;
                 laser_dest._shockResistance = 0.30f;
-                laser_dest._name = "Laser Rangefinder";
+                laser_dest._name = "Laser Rangefinder";  
 
                 fcs.LaserAim = LaserAimMode.ImpactPoint;
                 fcs.LaserComponent = laser_dest;
@@ -258,18 +263,19 @@ namespace CanadianLeopards
                 fcs._originalSuperleadMode = true;
                 fcs.ComputerNeedsPower = true;
                 fcs.RecordTraverseRateBuffer = true;
+                fcs._useSeparateLead = false;
                 //fcs._manualModeOnRangeSet = true;
                 //fcs._autoModeOnLase = true;
                 UsableOptic sabca = fcs.MainOptic;
                 sabca.ForceHorizontalReticleAlign = true;
-                //sabca.RotateAzimuth = true;                
+                sabca.RotateAzimuth = true;                
 
-                UnityEngine.Object.Destroy(fcs.OpticalRangefinder);
+                UnityEngine.Object.Destroy(fcs.OpticalRangefinder);                
                 GameObject sabca_go = sabca.gameObject;
                 CameraSlot sabca_cam = sabca_go.GetComponent<CameraSlot>();                
 
                 //Ensuring PZB-200 Night Sight
-                if (fcs.NightOptic == null)
+                if (fcs.NightOptic == null || fcs.NightOptic.name == "PERI-R12")
                 {
                     GameObject pzb_go;
                     GameObject aux_go;
@@ -282,13 +288,13 @@ namespace CanadianLeopards
                     { 
                         pzb_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/Mantlet/--Gun Scripts--/PZB-200").gameObject;
                         aux_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/Mantlet/--Gun Scripts--/Aux sight TZF1A").gameObject;
-                    }
+                    }                    
                     pzb_go.SetActive(true);
                     UsableOptic pzb = pzb_go.GetComponent<UsableOptic>();                    
                     pzb.ReticleActive = true;
                     pzb.StabsActive = true;
                     CameraSlot pzb_cam = pzb_go.GetComponent<CameraSlot>();
-                    CameraSlot aux_cam = aux_go.GetComponent<CameraSlot>();
+                    CameraSlot aux_cam = aux_go.GetComponent<CameraSlot>();                    
                     pzb_cam.LinkedDaySight = sabca_cam;
                     sabca_cam.LinkedNightSight = pzb_cam;
                     aux_cam.LinkedNightSight = pzb_cam;
@@ -298,11 +304,15 @@ namespace CanadianLeopards
                     pzb_cam.NightSightAtNightOnly = false;
                     fcs.NightOptic = pzb;
                     fcs.RegisterOptic(pzb);                    
-                    if (leo1a3) { vehicle.transform.Find("LEO1A3_mesh/1A3_PZB200").gameObject.SetActive(true); }
+                    if (leo1a3) 
+                    { 
+                        vehicle.transform.Find("LEO1A3_mesh/1A3_PZB200").gameObject.SetActive(true);
+                        vehicle.transform.Find("LEO1A3_mesh/PERI R12").gameObject.SetActive(false);
+                    }
                     else { vehicle.transform.Find("LEO1A1_mesh/PZB 200").gameObject.SetActive(true); }
                     if (!mute_logger.Value) { MelonLogger.Msg("Swapping night sights"); }
                 }
-
+                
                 //Changing the reticle in the primary sight
                 GameObject reticle_mesh_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS/Reticle Mesh").gameObject;
                 ReticleMesh reticle_mesh = reticle_mesh_go.GetComponent<ReticleMesh>();
@@ -327,7 +337,7 @@ namespace CanadianLeopards
                         vertices[i] = new Vector3(0f, 0f, 0f);
                     }
                 }
-                tzf.vertices = vertices;
+                tzf.vertices = vertices;                
 
                 sabca_cam.DefaultFov = 9.52f;
                 sabca_cam.OtherFovs = new float[] { 3f };
@@ -335,8 +345,16 @@ namespace CanadianLeopards
                 sabca_cam.ZoomInAudioEvent = "event:/Effects/Optic/Optic_Zoom_In";
                 sabca_cam.ZoomOutAudioEvent = "event:/Effects/Optic/Optic_Zoom_Out";
                 GameObject old_scale = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/" +
-                    "Sights/GPS/Leopard 1 GPS canvas/distance scale").gameObject;
-                old_scale.SetActive(false);
+                    "Sights/GPS/E-Scale").gameObject;                
+                old_scale.transform.Find("e-scale").gameObject.SetActive(false);
+                old_scale.transform.Find("index mark").gameObject.SetActive(false);                
+                Transform old_scale_red = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/" +
+                    "Sights/GPS/E-Scale red");                
+                if (old_scale_red != null)
+                {
+                    old_scale_red.transform.Find("e-scale").gameObject.SetActive(false);
+                    old_scale_red.transform.Find("index mark").gameObject.SetActive(false);
+                }                
 
                 maingun.WeaponData.FriendlyName = "105mm Gun L7A4 L/52";
 
@@ -428,8 +446,7 @@ namespace CanadianLeopards
                     a3_turret.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;
                     a3_skirt_cut.GetComponent<MeshRenderer>().material = base_mr.material;
                     a3_skirt_full.GetComponent<MeshRenderer>().material = base_mr.material;
-                    a3_wheels.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;
-                    if (!mute_logger.Value) { MelonLogger.Msg("Vehicle repainted"); }
+                    a3_wheels.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;                    
                 }
                 else
                 {                   
@@ -451,11 +468,10 @@ namespace CanadianLeopards
                     skirts_cut0.GetComponent<MeshRenderer>().material = base_mr.material;
                     skirts_cut1.GetComponent<MeshRenderer>().material = base_mr.material;
                     skirts_cut2.GetComponent<MeshRenderer>().material = base_mr.material;
-                    wheels.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;
-                    if (!mute_logger.Value) { MelonLogger.Msg("Vehicle repainted"); }
-                    
+                    wheels.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;                                      
                 }
-                
+                if (!mute_logger.Value) { MelonLogger.Msg("Vehicle repainted"); }
+
                 //The Iron-Cross decals have weird UVs so we need to create custom meshes
                 GameObject turret = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET").gameObject;
                 GameObject maple_left = new GameObject("Mapleleaf_left");
@@ -647,7 +663,6 @@ namespace CanadianLeopards
                         mlc_decal.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
                     }                    
                 }
-
                 if (!mute_logger.Value) { MelonLogger.Msg("Conversions complete on " + vehicle_go.name); }
             }
 
