@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using MelonLoader;
 using CanadianLeopards;
 
-[assembly: MelonInfo(typeof(CanadianLeopardsClass), "CanadianLeopards", "1.3.1", "Bluehawk, Agentgummby")]
+[assembly: MelonInfo(typeof(CanadianLeopardsClass), "CanadianLeopards", "1.3.2", "Bluehawk, Agentgummby")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 // General Information about an assembly is controlled through the following
