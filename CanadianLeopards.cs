@@ -146,8 +146,7 @@ namespace CanadianLeopards
             }
             
             if (crosshair.mesh == null)
-            {
-                MelonLogger.Msg("Looking for Marder...");
+            { 
                 Vehicle marder = null;
                 foreach (var vehicle in list)
                 {
@@ -341,11 +340,9 @@ namespace CanadianLeopards
                 
                 //Changing the reticle in the primary sight
                 GameObject reticle_mesh_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS/Reticle Mesh").gameObject;
-                ReticleMesh reticle_mesh = reticle_mesh_go.GetComponent<ReticleMesh>();
-                MelonLogger.Msg("Attempting to change GPS reticle");
+                ReticleMesh reticle_mesh = reticle_mesh_go.GetComponent<ReticleMesh>();                
                 reticle_mesh.reticleSO = crosshair.tree;
-                reticle_mesh.reticle = crosshair;
-                MelonLogger.Msg("Cached reticle retrieved");
+                reticle_mesh.reticle = crosshair;                
                 reticle_mesh.SMR = null;
                 reticle_mesh.Load();
                 reticle_mesh.enabled = false;                
