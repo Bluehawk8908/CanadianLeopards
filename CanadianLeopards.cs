@@ -38,7 +38,8 @@ namespace CanadianLeopards
         public static MelonPreferences_Entry<bool> mute_logger;
 
         public static GameObject american_crew_voice = null;
-        public static GameObject m240_prefab = null;        
+        public static GameObject m240_prefab = null;
+        public static ReticleMesh.CachedReticle crosshair;
         static bool activeScene = false;
         static bool grafen = false;
         
@@ -142,7 +143,32 @@ namespace CanadianLeopards
                     if (!mute_logger.Value) { MelonLogger.Msg("Dummy Abrams fetched"); }                
                 }               
                 american_crew_voice = abrams.GetComponentInChildren<CrewVoiceHandler>().gameObject;                
-            } 
+            }
+            
+            if (crosshair.mesh == null)
+            {
+                MelonLogger.Msg("Looking for Marder...");
+                Vehicle marder = null;
+                foreach (var vehicle in list)
+                {
+                    if (!vehicle.UniqueName.StartsWith("MARDER")) { continue; }
+                    marder = vehicle;
+                    crosshair = marder.transform.Find("Marder1A1_rig/hull/turret/PERI Z11/NFOV reticle").GetComponent<ReticleMesh>().reticle;
+                    if (!mute_logger.Value) { MelonLogger.Msg("Marder found in scene"); }
+                    break;
+                }
+
+                if (marder == null)
+                {
+                    var prefabLookups = Object.FindAnyObjectByType<UnitSpawner>().PrefabLookup;
+                    AssetReference prefab = prefabLookups.GetPrefab("MARDERA1PLUS");
+                    marder = Addressables.LoadAssetAsync<GameObject>(prefab).WaitForCompletion().GetComponent<Vehicle>();
+                    ReticleMesh prefabReticle = marder.transform.Find("FCS and sights/PERI Z11/NFOV reticle").GetComponent<ReticleMesh>();
+                    prefabReticle.Load();
+                    crosshair = prefabReticle.reticle;                    
+                    if (!mute_logger.Value) { MelonLogger.Msg("Dummy Marder fetched"); }
+                }                
+            }
 
             Texture2D maple = new Texture2D(128, 128);  //loading these images outside the main loop to avoid slowdowns
             string maplePath;
@@ -316,29 +342,18 @@ namespace CanadianLeopards
                 //Changing the reticle in the primary sight
                 GameObject reticle_mesh_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS/Reticle Mesh").gameObject;
                 ReticleMesh reticle_mesh = reticle_mesh_go.GetComponent<ReticleMesh>();
-                reticle_mesh.reticleSO = ReticleMesh.cachedReticles["TZF"].tree;
-                reticle_mesh.reticle = ReticleMesh.cachedReticles["TZF"];
+                MelonLogger.Msg("Attempting to change GPS reticle");
+                reticle_mesh.reticleSO = crosshair.tree;
+                reticle_mesh.reticle = crosshair;
+                MelonLogger.Msg("Cached reticle retrieved");
                 reticle_mesh.SMR = null;
                 reticle_mesh.Load();
-                reticle_mesh.enabled = false;
-                reticle_mesh.transform.localPosition = new Vector3(0.85f, -35.8f, 0f);
-                reticle_mesh.transform.localRotation = reticle_mesh.transform.localRotation * Quaternion.Euler(new Vector3(0f, 0f, 1f));
+                reticle_mesh.enabled = false;                
                 ReticleTree.Light new_light = new ReticleTree.Light();
                 new_light.color = new RGB(4f, 3f, 0, true);
                 new_light.type = ReticleTree.Light.Type.Powered;
                 reticle_mesh.lights[0].light = new_light;
-                reticle_mesh.lightCols[1] = new Vector4(4f, 3f, 0f, 1f);
-                Mesh tzf = reticle_mesh_go.GetComponent<SkinnedMeshRenderer>().sharedMesh;
-                Vector3[] vertices = tzf.vertices;
-                for (int i = 0; i < 2296; i++) //removing range scales and pointers but keeping central reticle
-                {
-                    if (i < 1872 || i > 2090)
-                    {
-                        vertices[i] = new Vector3(0f, 0f, 0f);
-                    }
-                }
-                tzf.vertices = vertices;                
-
+                reticle_mesh.lightCols[1] = new Vector4(4f, 3f, 0f, 1f);  
                 sabca_cam.DefaultFov = 9.52f;
                 sabca_cam.OtherFovs = new float[] { 3f };
                 sabca_cam.AllowFreeZoom = true;
