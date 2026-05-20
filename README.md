@@ -12,11 +12,13 @@ As per version 1.2, German-style tactical symbols may be worn, as they appear in
 
 Per version 1.3.1, the new Leopard 1A4 may be converted (reverted?) into a C1, controlled in the config file (excluded by default).  
 
+Version 1.4 adds the option to convert West German M113 APCs and infntry into Canadian assets, toggleable in the config. Toggling "additional decals" with remove the MLC number and NATO map symbols from the APC hull. In lieu of a new model for the C1 (FN FAL), they're equipped with M16s standing in for the C7 rifle.
+
 ***Installation***  
 This mod requires MelonLoader and is intended to be used with Version 0.6.1!
 This mod does NOT require the Vehicle Preloader or Texture Loader.
 
-To install, simply extract the "CanadianLeopards.dll" file and the "CanadianLeopards" folder into the /mods/ folder. If done correctly, there should only be PNGs in the /mods/CanadianLeopards/ directory and the DLL file is separate. If upgrading from 1.2 to 1.3 or from 1.3 to 1.3.1, you only need to update the DLL.
+To install from the ZIP file, extract the "CanadianLeopards.dll" file and the "CanadianLeopards" folder into the /mods/ folder. If done correctly, there should only be PNGs in the /mods/CanadianLeopards/ directory and the DLL file is separate. If upgrading from 1.3 or 1.3.1 to 1.4, you will need to extract the new texture files in addition to the DLL.
 
 ***Acknowledgements***  
 Programming: Bluehawk  
@@ -35,6 +37,8 @@ This mod does not copy or incorporate any material wholesale from other modders 
 1.1 - Hotfix   
 1.2 - Added tactical symbols and MLC number  
 1.3 - C1s based on the Leopard 1A3 added to the Grafenwöhr showcase  
-1.3.1 - Compatibility patch for GHPC 20260507
-![New decals per version 1.2](https://i.imgur.com/pXAMOAA.jpeg)
+1.3.1 - Compatibility patch for GHPC 20260507  
+1.4 - Added Canadian APCs and infantry, improved Leopard primary sight reticles
+![New decals per version 1.2](https://i.imgur.com/pXAMOAA.jpeg)  
+![Infantry on the move](https://i.imgur.com/on9jmqA.jpeg)
 
