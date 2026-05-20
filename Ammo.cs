@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using UnityEngine;
@@ -11,7 +11,7 @@ namespace CanadianLeopards
 {
     public class AmmoSwaps
     {
-        public void HistoricalLoad(WeaponSystem maingun, LoadoutManager loadout_manager, bool mute_logger)
+        public static void HistoricalLoad(WeaponSystem maingun, LoadoutManager loadout_manager, bool mute_logger)
         {
             WeaponSystem gun = maingun;
             LoadoutManager lm = loadout_manager;
@@ -80,7 +80,7 @@ namespace CanadianLeopards
             loadout_manager.RegisterAllBallistics();
             if (!mute_logger) { MelonLogger.Msg("Swapped out HEAT for HESH"); }            
         }
-        public void AmericanLoad(WeaponSystem maingun, LoadoutManager loadout_manager, bool mute_logger)
+        public static void AmericanLoad(WeaponSystem maingun, LoadoutManager loadout_manager, bool mute_logger)
         {
             AmmoClipCodexScriptable[] clip_codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoClipCodexScriptable>();
             AmmoClipCodexScriptable clip_codex_sabot = clip_codex_scriptables.Where(o => o.name == "clip_M774").FirstOrDefault();
