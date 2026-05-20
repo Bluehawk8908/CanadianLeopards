@@ -247,8 +247,8 @@ namespace CanadianLeopards
                     dress.material.SetTexture("_Normal", canInf_nm);                    
                     accoutrements.material.SetTexture("_Albedo", canInf);                    
                     helmet.material.SetTexture("_Albedo", canInf);
-                    dress.material.SetTexture("_Normal", canInf_nm);
-                    dress.material.SetTexture("_Smoothness", canInf_sm);
+                    helmet.material.SetTexture("_Normal", canInf_nm);
+                    helmet.material.SetTexture("_Smoothness", canInf_sm);                                        
                     webbing.material.SetTexture("_Albedo", canInf);
 
                     troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/Troop Weapons/--PRIMARY WEAPONS/M16A1").gameObject.SetActive(true);
