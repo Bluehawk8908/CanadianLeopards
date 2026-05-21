@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using GHPC;
 using GHPC.AI.Platoons;
 using GHPC.Vehicle;
 using GHPC.Utility;
@@ -56,7 +57,12 @@ namespace CanadianLeopards
             helmet.material.SetTexture("_Smoothness", canInf_sm);
             dress.material.SetTexture("_Albedo", canInf);
             dress.material.SetTexture("_Normal", canInf_nm);
-            webbing.material.SetTexture("_Albedo", canInf);            
+            webbing.material.SetTexture("_Albedo", canInf);
+
+            AarVisual aarVis = gunner.GetComponent<AarVisual>();
+            aarVis.OriginalMaterials[dress] = new System.Collections.Generic.List<Material> { dress.material };            
+            aarVis.OriginalMaterials[helmet] = new System.Collections.Generic.List<Material> { helmet.material };
+            aarVis.OriginalMaterials[webbing] = new System.Collections.Generic.List<Material> { webbing.material };
            
             vehicle_go.transform.Find("M113G_markings/cross").gameObject.SetActive(false);
             Material cross = vehicle_go.transform.Find("M113G_markings/cross").GetComponent<MeshRenderer>().material;
