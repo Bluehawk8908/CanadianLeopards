@@ -251,6 +251,12 @@ namespace CanadianLeopards
                     helmet.material.SetTexture("_Smoothness", canInf_sm);                                        
                     webbing.material.SetTexture("_Albedo", canInf);
 
+                    AarVisual aarVis = troop.transform.Find("Troop Base").GetComponent<AarVisual>();
+                    aarVis.OriginalMaterials[dress] = new System.Collections.Generic.List<Material> { dress.material };
+                    aarVis.OriginalMaterials[accoutrements] = new System.Collections.Generic.List<Material> { accoutrements.material };
+                    aarVis.OriginalMaterials[helmet] = new System.Collections.Generic.List<Material> { helmet.material };
+                    aarVis.OriginalMaterials[webbing] = new System.Collections.Generic.List<Material> { webbing.material };
+
                     troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/Troop Weapons/--PRIMARY WEAPONS/M16A1").gameObject.SetActive(true);
                     troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3").gameObject.SetActive(false);
 
@@ -261,6 +267,7 @@ namespace CanadianLeopards
                     InfantryRagdoll ird = troop.transform.Find("Troop Base").GetComponent<InfantryRagdoll>();                    
                     iwm._weapons[0] = m16;
                     iwm._equippableWeapons[0] = m16;
+                    iwm.EquippedWeapon = m16;
                     ird._weaponRagdolls[0] = m16.transform.GetComponent<WeaponRagdoll>();
                     infAnimation._primaryWeapon = m16_anim;
                     infAnimation._targetWeapon = m16_anim;
