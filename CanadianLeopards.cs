@@ -95,10 +95,11 @@ namespace CanadianLeopards
 
         public static Texture2D FetchTex(int x, int y, string path)
         {
-            Texture2D temp = new Texture2D(x, y);            
-            byte[] data = File.ReadAllBytes(path);
-            if (data.Length == 0) { MelonLogger.Msg("Wanted texture file at " + path + " missing!");}
-            temp.LoadImage(data);
+            Texture2D temp = new Texture2D(x, y);
+            try {
+                byte[] data = File.ReadAllBytes(path);
+                temp.LoadImage(data); }
+            catch (FileNotFoundException e) { MelonLogger.Error(e); }
             return temp;
         }
 
