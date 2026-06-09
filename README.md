@@ -38,7 +38,8 @@ This mod does not copy or incorporate any material wholesale from other modders 
 1.2 - Added tactical symbols and MLC number  
 1.3 - C1s based on the Leopard 1A3 added to the Grafenwöhr showcase  
 1.3.1 - Compatibility patch for GHPC 20260507  
-1.4 - Added Canadian APCs and infantry, improved Leopard primary sight reticles
+1.4 - Added Canadian APCs and infantry, improved Leopard primary sight reticles  
+1.4.1 - Proper error-handling for missing textures
 ![New decals per version 1.2](https://i.imgur.com/pXAMOAA.jpeg)  
 ![Infantry on the move](https://i.imgur.com/on9jmqA.jpeg)
 
