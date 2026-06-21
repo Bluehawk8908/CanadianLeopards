@@ -78,6 +78,11 @@ namespace CanadianLeopards
             mute_logger.Comment = "Mutes log messages in the MelonLoader console.";
         }
 
+        public static void Log(string text)
+        {
+            if (!mute_logger.Value) { MelonLogger.Msg(text); }
+        }
+
         void ShowcaseExtras()
         {
             var prefabLookups = Object.FindAnyObjectByType<UnitSpawner>().PrefabLookup;
@@ -89,16 +94,30 @@ namespace CanadianLeopards
             Leo1A3A3.GetComponent<Vehicle>().Allegiance = Faction.Neutral;
             GameObject.Instantiate(Leo1A3, new Vector3(1423.7f, 26.416f, 1433.9f), Quaternion.Euler(0.573f, 233.87f, 358.75f));
             GameObject.Instantiate(Leo1A3A3, new Vector3(1399.87f, 25.7f, 1436.75f), Quaternion.Euler(0.925f, 230.98f, 358.284f));                      
-            if (!mute_logger.Value) { MelonLogger.Msg("Spawned additional vehicles on the range."); }
+            Log("Spawned additional vehicles on the range.");
             grafen = true;            
         }
 
         public static Texture2D FetchTex(int x, int y, string path)
         {
             Texture2D temp = new Texture2D(x, y);
-            try {
+            try
+            {
                 byte[] data = File.ReadAllBytes(path);
-                temp.LoadImage(data); }
+                temp.LoadImage(data);
+            }
+            catch (FileNotFoundException e) { MelonLogger.Error(e); }
+            return temp;
+        }
+
+        public static Texture2D FetchTex(int x, int y, string path, bool linear)
+        {
+            Texture2D temp = new Texture2D(x, y, TextureFormat.DXT5, true, linear);
+            try
+            {
+                byte[] data = File.ReadAllBytes(path);
+                temp.LoadImage(data);
+            }
             catch (FileNotFoundException e) { MelonLogger.Error(e); }
             return temp;
         }
@@ -142,7 +161,7 @@ namespace CanadianLeopards
             
             
             // PREFABS
-            if (m240_prefab == null || american_crew_voice == null) 
+            if (m240_prefab == null || american_crew_voice == null || cal50 == null) 
             {
                 Vehicle abrams = null;
                 foreach (var vehicle in list)
@@ -151,7 +170,7 @@ namespace CanadianLeopards
                     abrams = vehicle;                        
                     m240_prefab = abrams.transform.Find("IPM1_rig/HULL/TURRET/Turret Scripts/M240_loader").gameObject;
                     cal50 = abrams.transform.Find("IPM1_rig/HULL/TURRET/CUPOLA/CUPOLA_GUN/12.7mm Machine Gun M48").GetComponent<AmmoFeed>();
-                    if (!mute_logger.Value) { MelonLogger.Msg("Abrams found in scene"); }
+                    Log("Abrams found in scene");
                     break;                  
                 }
                 
@@ -161,9 +180,9 @@ namespace CanadianLeopards
                     AssetReference prefab = prefabLookups.GetPrefab("M1");
                     abrams = Addressables.LoadAssetAsync<GameObject>(prefab).WaitForCompletion().GetComponent<Vehicle>();
                     m240_prefab = abrams.transform.Find("Turret Scripts/M240_loader").gameObject;
-                    if (!mute_logger.Value) { MelonLogger.Msg("Dummy Abrams fetched"); }
+                    Log("Dummy Abrams fetched");
                     cal50 = abrams.transform.Find("Cupola Scripts/12.7mm Machine Gun M48").GetComponent<AmmoFeed>(); ;
-                    if (cal50 != null) { MelonLogger.Msg("M2 Browning AmmoFeed found"); }
+                    if (cal50 != null) { Log("M2 Browning AmmoFeed found"); }
                 }               
                 american_crew_voice = abrams.GetComponentInChildren<CrewVoiceHandler>().gameObject;                
             }
@@ -176,7 +195,7 @@ namespace CanadianLeopards
                     if (!vehicle.UniqueName.StartsWith("MARDER")) { continue; }
                     marder = vehicle;
                     crosshair = marder.transform.Find("Marder1A1_rig/hull/turret/PERI Z11/NFOV reticle").GetComponent<ReticleMesh>().reticle;
-                    if (!mute_logger.Value) { MelonLogger.Msg("Marder found in scene"); }
+                    Log("Marder found in scene");
                     break;
                 }
 
@@ -188,7 +207,7 @@ namespace CanadianLeopards
                     ReticleMesh prefabReticle = marder.transform.Find("FCS and sights/PERI Z11/NFOV reticle").GetComponent<ReticleMesh>();
                     prefabReticle.Load();
                     crosshair = prefabReticle.reticle;                    
-                    if (!mute_logger.Value) { MelonLogger.Msg("Dummy Marder fetched"); }
+                    Log("Dummy Marder fetched");
                 }                
             }
 
@@ -207,31 +226,15 @@ namespace CanadianLeopards
             Texture2D tac = FetchTex(128, 98, "Mods/CanadianLeopards/tac.png");            
             string mlcPath = decals_outlined.Value ? "Mods/CanadianLeopards/mlc.png": "Mods/CanadianLeopards/mlc_black.png";
             Texture2D mlc = FetchTex(128, 128, mlcPath);            
-            Texture2D canInf = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf.png");
-            Texture2D canInf_nm = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf_nm.png");
-            Texture2D canInf_sm = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf_sm.png");
+            Texture2D canInf = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf.png");            
+            Texture2D canInf_nm = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf_nm.png", true);
+            Texture2D canInf_sm = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf_sm.png", true);
             Texture2D apc = FetchTex(2048, 2048, "Mods/CanadianLeopards/apc.png"); 
             Texture2D flag = FetchTex(196, 98, "Mods/CanadianLeopards/flag.png");
             Texture2D mlcAPC = FetchTex(128, 128, "Mods/CanadianLeopards/mlc_apc.png");
             Texture2D tacAPC = FetchTex(148, 88, "Mods/CanadianLeopards/tac_apc.png");
-            Texture2D callsignsAPC = new Texture2D(512, 64);
-            if (!decals_outlined.Value) { callsignsAPC = callsigns; }
-            else
-            {
-                string callsignsAPCPath = "Mods/CanadianLeopards/callsigns_black.png";
-                byte[] callsignsAPC_data = File.ReadAllBytes(callsignsAPCPath);
-                if (callsignsAPC_data.Length != 0) { callsignsAPC.LoadImage(callsignsAPC_data, true); }
-                else { MelonLogger.Msg("Wanted texture file at " + callsignsAPCPath + " missing!"); }
-            }
-            Texture2D mapleAPC = new Texture2D(128, 128);
-            if (!decals_outlined.Value) { mapleAPC = maple; }
-            else
-            {
-                string mapleAPCPath = "Mods/CanadianLeopards/maple_black.png";
-                byte[] mapleAPC_data = File.ReadAllBytes(mapleAPCPath);
-                if (mapleAPC_data.Length != 0) { mapleAPC.LoadImage(mapleAPC_data, true); }
-                else { MelonLogger.Msg("Wanted texture file at " + mapleAPCPath + " missing!"); }
-            }
+            Texture2D callsignsAPC = (!decals_outlined.Value) ? callsigns : FetchTex(512, 64, "Mods/CanadianLeopards/callsigns_black.png");
+            Texture2D mapleAPC = (!decals_outlined.Value) ? maple : FetchTex(128, 128, "Mods/CanadianLeopards/maple_black.png");            
 
             //INFANTRY
             if (convert_infantry.Value) { 
@@ -275,7 +278,7 @@ namespace CanadianLeopards
                     infAnimation._activeWeapon = m16_anim;
 
                     troop.gameObject.AddComponent<CanLepConverted>();
-                    if (!mute_logger.Value) { MelonLogger.Msg(troop + " converted to CF Infantry"); }
+                    Log(troop.name + " converted to CF Infantry");
                 }
             }
             
@@ -287,14 +290,15 @@ namespace CanadianLeopards
                 if (vehicle_go.GetComponent<CanLepConverted>() != null) { continue; }
                 
                 if (vehicle.UniqueName == "M113G" && convert_infantry.Value) {                    
-                    M113.Convert(vehicle, vehicle_go, cal50, additional_decals.Value, mapleAPC, canInf, canInf_nm, canInf_sm, callsignsAPC, apc, flag, tacAPC, mlcAPC);
-                    if (!mute_logger.Value) { MelonLogger.Msg("Conversions complete on " + vehicle_go.name); }
+                    M113.Convert(vehicle, vehicle_go, cal50, additional_decals.Value, 
+                        mapleAPC, canInf, canInf_nm, canInf_sm, callsignsAPC, apc, flag, tacAPC, mlcAPC);
+                    Log("Conversions complete on " + vehicle_go.name);
                 }
                 
                 string short_name = vehicle_go.name.Substring(0, 3);
                 if (short_name != "LEO") { continue; }
                 vehicle_go.AddComponent<CanLepConverted>();
-                if (!mute_logger.Value) { MelonLogger.Msg("Found vic named: " + vehicle_go.name); }                
+                Log("Found vic named: " + vehicle_go.name);                
                 bool leo1a3 = false;               
                 short_name = vehicle_go.name.Substring(0, 6);
                 if (short_name == "LEO1A3" || short_name == "LEO1A4") { leo1a3 = true; }
@@ -386,7 +390,7 @@ namespace CanadianLeopards
                         vehicle.transform.Find("LEO1A3_mesh/PERI R12").gameObject.SetActive(false);
                     }
                     else { vehicle.transform.Find("LEO1A1_mesh/PZB 200").gameObject.SetActive(true); }
-                    if (!mute_logger.Value) { MelonLogger.Msg("Swapping night sights"); }
+                    Log("Swapping night sights"); 
                 }
                 
                 //Changing the reticle in the primary sight
@@ -455,7 +459,7 @@ namespace CanadianLeopards
                     else if (ammo_loadout.Value == "American" || ammo_loadout.Value == "american") { AmmoSwaps.AmericanLoad(maingun, loadout_manager, mute_logger.Value); }
                     else
                     {
-                        if (!mute_logger.Value) { MelonLogger.Msg("Unknown value for ammo loadout, using mission defaults"); }
+                        Log("Unknown value for ammo loadout, using mission defaults");
                     }
 
                 }
@@ -531,7 +535,7 @@ namespace CanadianLeopards
                     skirts_cut2.GetComponent<MeshRenderer>().material = base_mr.material;
                     wheels.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;                                      
                 }
-                if (!mute_logger.Value) { MelonLogger.Msg("Vehicle repainted"); }
+                Log("Vehicle repainted");
 
                 //The Iron-Cross decals have weird UVs so we need to create custom meshes
                 GameObject turret = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET").gameObject;
@@ -724,7 +728,7 @@ namespace CanadianLeopards
                         mlc_decal.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
                     }                    
                 }
-                if (!mute_logger.Value) { MelonLogger.Msg("Conversions complete on " + vehicle_go.name); }
+                Log("Conversions complete on " + vehicle_go.name);
             }
 
             if (grafen) {
