@@ -2,16 +2,14 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using UnityEngine;
-using MelonLoader;
 using GHPC.Weapons;
 using GHPC.Weaponry;
-
 
 namespace CanadianLeopards
 {
     public class AmmoSwaps
     {
-        public static void HistoricalLoad(WeaponSystem maingun, LoadoutManager loadout_manager, bool mute_logger)
+        public static void HistoricalLoad(WeaponSystem maingun, LoadoutManager loadout_manager)
         {
             WeaponSystem gun = maingun;
             LoadoutManager lm = loadout_manager;
@@ -32,14 +30,14 @@ namespace CanadianLeopards
             AmmoType.AmmoClip clip_sabot = loadout_manager.LoadedAmmoList.AmmoClips[0].ClipType;
             AmmoCodexScriptable codex_sabot = clip_sabot.MinimalPattern[0];
             AmmoType ammo_sabot = codex_sabot.AmmoType;            
-            if (clip_sabot.Name == "DM23 APFSDS-T") {
-                if (!mute_logger) { MelonLogger.Msg("DM-23 being renamed"); }
+            if (clip_sabot.Name == "DM23 APFSDS-T") {                
+                CanadianLeopardsClass.Log("DM-23 being renamed");
                 ammo_sabot.Name = "C76 APFSDS-T";
                 clip_sabot.Name = "C76 APFSDS-T";
                 
             }
             if (clip_sabot.Name == "DM13 APDS-T") { 
-                if (!mute_logger) { MelonLogger.Msg("DM-13 being renamed"); }
+                CanadianLeopardsClass.Log("DM-13 being renamed");
                 clip_sabot.Name = "C35 APDS-T";
                 ammo_sabot.Name = "C35 APDS-T";
             }
@@ -78,9 +76,9 @@ namespace CanadianLeopards
             loadout_manager.SpawnCurrentLoadout();            
             maingun.Feed.Start();            
             loadout_manager.RegisterAllBallistics();
-            if (!mute_logger) { MelonLogger.Msg("Swapped out HEAT for HESH"); }            
+            CanadianLeopardsClass.Log("Swapped out HEAT for HESH");           
         }
-        public static void AmericanLoad(WeaponSystem maingun, LoadoutManager loadout_manager, bool mute_logger)
+        public static void AmericanLoad(WeaponSystem maingun, LoadoutManager loadout_manager)
         {
             AmmoClipCodexScriptable[] clip_codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoClipCodexScriptable>();
             AmmoClipCodexScriptable clip_codex_sabot = clip_codex_scriptables.Where(o => o.name == "clip_M774").FirstOrDefault();
@@ -120,7 +118,7 @@ namespace CanadianLeopards
             loadout_manager.SpawnCurrentLoadout();            
             maingun.Feed.Start();            
             loadout_manager.RegisterAllBallistics();
-            if (!mute_logger) { MelonLogger.Msg("Loaded M774 sabot and M456A2 heat"); }
+            CanadianLeopardsClass.Log("Loaded M774 sabot and M456A2 heat");
         }
     }
 }
