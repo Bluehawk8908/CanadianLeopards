@@ -142,8 +142,8 @@ namespace CanadianLeopards
             if (sceneName == "MainMenu2_Scene" || sceneName == "t64_menu" || sceneName == "MainMenu2-1_Scene") 
             {
                 activeScene = false;
-                grafen = false;
-                return; 
+                grafen = false; 
+                return;               
             }
 
             gameManager = GameObject.Find("_APP_GHPC_");
@@ -212,17 +212,15 @@ namespace CanadianLeopards
             }
 
             //TEXTURES
-            string maplePath = decals_outlined.Value ? "Mods/CanadianLeopards/maple.png" : "Mods/CanadianLeopards/maple_black.png"; 
+            string maplePath = decals_outlined.Value ? "Mods/CanadianLeopards/maple.png" : "Mods/CanadianLeopards/maple_black.png";
             Texture2D maple = FetchTex(128, 128, maplePath);
             string A1_basePath = carc_green.Value ? "Mods/CanadianLeopards/green.png" : "Mods/CanadianLeopards/1A1_base.png";
             Texture2D A1_base = FetchTex(2048, 2048, A1_basePath);
             Texture2D A3_base = FetchTex(2048, 2048, "Mods/CanadianLeopards/1A3_base.png"); 
-            string callsignsPath = decals_outlined.Value ? "Mods/CanadianLeopards/callsigns.png": "Mods/CanadianLeopards/callsigns_black.png";
-            Texture2D callsigns = FetchTex(512, 64, callsignsPath); 
-            string camoPath = no_threecolour.Value ? "Mods/CanadianLeopards/nocamMask.png" : "Mods/CanadianLeopards/A1_mask.png";
-            Texture2D A1_camomask = FetchTex(2048, 2048, camoPath);
-            string camoPath3 = no_threecolour.Value ? "Mods/CanadianLeopards/nocamMask.png" : "Mods/CanadianLeopards/A3_mask.png";
-            Texture2D A3_camomask = FetchTex(2048, 2048, camoPath3);
+            string callsignsPath = decals_outlined.Value ? "Mods/CanadianLeopards/callsigns.png": "Mods/CanadianLeopards/callsigns_black.png";            
+            Texture2D callsigns = FetchTex(512, 64, callsignsPath);             
+            Texture2D A1_camomask = FetchTex(2048, 2048, "Mods/CanadianLeopards/A1_mask.png");            
+            Texture2D A3_camomask = FetchTex(2048, 2048, "Mods/CanadianLeopards/A3_mask.png");
             Texture2D tac = FetchTex(128, 98, "Mods/CanadianLeopards/tac.png");            
             string mlcPath = decals_outlined.Value ? "Mods/CanadianLeopards/mlc.png": "Mods/CanadianLeopards/mlc_black.png";
             Texture2D mlc = FetchTex(128, 128, mlcPath);            
@@ -281,42 +279,42 @@ namespace CanadianLeopards
                     Log(troop.name + " converted to CF Infantry");
                 }
             }
-            
+
             //VEHICLES
             foreach (var vehicle in list)
             {
                 GameObject vehicle_go = vehicle.gameObject;
                 if (vehicle_go == null) { continue; }
                 if (vehicle_go.GetComponent<CanLepConverted>() != null) { continue; }
-                
-                if (vehicle.UniqueName == "M113G" && convert_infantry.Value) {                    
-                    M113.Convert(vehicle, vehicle_go, cal50, additional_decals.Value, 
+
+                if (vehicle.UniqueName == "M113G" && convert_infantry.Value) {
+                    M113.Convert(vehicle, vehicle_go, cal50, additional_decals.Value,
                         mapleAPC, canInf, canInf_nm, canInf_sm, callsignsAPC, apc, flag, tacAPC, mlcAPC);
                     Log("Conversions complete on " + vehicle_go.name);
                 }
-                
+
                 string short_name = vehicle_go.name.Substring(0, 3);
                 if (short_name != "LEO") { continue; }
                 vehicle_go.AddComponent<CanLepConverted>();
-                Log("Found vic named: " + vehicle_go.name);                
-                bool leo1a3 = false;               
+                Log("Found vic named: " + vehicle_go.name);
+                bool leo1a3 = false;
                 short_name = vehicle_go.name.Substring(0, 6);
                 if (short_name == "LEO1A3" || short_name == "LEO1A4") { leo1a3 = true; }
                 if (short_name == "LEO1A4" && exclude_1A4.Value == true) { continue; }
                 vehicle._friendlyName = "Leopard C1";  //New display name
 
                 vehicle.transform.Find("DE Tank Voice").gameObject.SetActive(false); //Adding US Voices
-                GameObject new_voice = GameObject.Instantiate(american_crew_voice, vehicle.transform);                
+                GameObject new_voice = GameObject.Instantiate(american_crew_voice, vehicle.transform);
                 new_voice.transform.localPosition = new Vector3(0, 0, 0);
                 new_voice.transform.localEulerAngles = new Vector3(0, 0, 0);
                 CrewVoiceHandler handler = new_voice.GetComponent<CrewVoiceHandler>();
                 handler._chassis = vehicle._chassis as NwhChassis;
                 vehicle._crewVoiceHandler = handler;
-                new_voice.SetActive(true);                
+                new_voice.SetActive(true);
 
                 WeaponSystem maingun = vehicle.GetComponent<WeaponsManager>().Weapons[0].Weapon;
                 WeaponSystemInfo coax = vehicle.GetComponent<WeaponsManager>().Weapons[1];
-                FireControlSystem fcs = vehicle.GetComponentInChildren<FireControlSystem>();                
+                FireControlSystem fcs = vehicle.GetComponentInChildren<FireControlSystem>();
 
                 //Adding Laser-Range Finder and Lead-Calculator
                 GameObject lrf_holder = new GameObject("Laser Rangefinder");
@@ -329,7 +327,7 @@ namespace CanadianLeopards
                 laser_dest._fullHealth = 5f;
                 laser_dest._pressureTolerance = 1f;
                 laser_dest._shockResistance = 0.30f;
-                laser_dest._name = "Laser Rangefinder";  
+                laser_dest._name = "Laser Rangefinder";
 
                 fcs.LaserAim = LaserAimMode.ImpactPoint;
                 fcs.LaserComponent = laser_dest;
@@ -348,33 +346,33 @@ namespace CanadianLeopards
                 //fcs._autoModeOnLase = true;
                 UsableOptic sabca = fcs.MainOptic;
                 sabca.ForceHorizontalReticleAlign = true;
-                sabca.RotateAzimuth = true;                
+                sabca.RotateAzimuth = true;
 
-                UnityEngine.Object.Destroy(fcs.OpticalRangefinder);                
+                UnityEngine.Object.Destroy(fcs.OpticalRangefinder);
                 GameObject sabca_go = sabca.gameObject;
-                CameraSlot sabca_cam = sabca_go.GetComponent<CameraSlot>();                
+                CameraSlot sabca_cam = sabca_go.GetComponent<CameraSlot>();
 
                 //Ensuring PZB-200 Night Sight
                 if (fcs.NightOptic == null || fcs.NightOptic.name == "PERI-R12")
                 {
                     GameObject pzb_go;
                     GameObject aux_go;
-                    if (leo1a3) 
-                    { 
+                    if (leo1a3)
+                    {
                         pzb_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/1A3 mantlet/--Gun Scripts--/PZB-200").gameObject;
                         aux_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/1A3 mantlet/--Gun Scripts--/Aux sight TZF1A").gameObject;
                     }
-                    else 
-                    { 
+                    else
+                    {
                         pzb_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/Mantlet/--Gun Scripts--/PZB-200").gameObject;
                         aux_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/Mantlet/--Gun Scripts--/Aux sight TZF1A").gameObject;
-                    }                    
+                    }
                     pzb_go.SetActive(true);
-                    UsableOptic pzb = pzb_go.GetComponent<UsableOptic>();                    
+                    UsableOptic pzb = pzb_go.GetComponent<UsableOptic>();
                     pzb.ReticleActive = true;
                     pzb.StabsActive = true;
                     CameraSlot pzb_cam = pzb_go.GetComponent<CameraSlot>();
-                    CameraSlot aux_cam = aux_go.GetComponent<CameraSlot>();                    
+                    CameraSlot aux_cam = aux_go.GetComponent<CameraSlot>();
                     pzb_cam.LinkedDaySight = sabca_cam;
                     sabca_cam.LinkedNightSight = pzb_cam;
                     aux_cam.LinkedNightSight = pzb_cam;
@@ -383,45 +381,45 @@ namespace CanadianLeopards
                     pzb_cam._isUsableByWeapon = true;
                     pzb_cam.NightSightAtNightOnly = false;
                     fcs.NightOptic = pzb;
-                    fcs.RegisterOptic(pzb);                    
-                    if (leo1a3) 
-                    { 
+                    fcs.RegisterOptic(pzb);
+                    if (leo1a3)
+                    {
                         vehicle.transform.Find("LEO1A3_mesh/1A3_PZB200").gameObject.SetActive(true);
                         vehicle.transform.Find("LEO1A3_mesh/PERI R12").gameObject.SetActive(false);
                     }
                     else { vehicle.transform.Find("LEO1A1_mesh/PZB 200").gameObject.SetActive(true); }
-                    Log("Swapping night sights"); 
+                    Log("Swapping night sights");
                 }
-                
+
                 //Changing the reticle in the primary sight
                 GameObject reticle_mesh_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS/Reticle Mesh").gameObject;
-                ReticleMesh reticle_mesh = reticle_mesh_go.GetComponent<ReticleMesh>();                
+                ReticleMesh reticle_mesh = reticle_mesh_go.GetComponent<ReticleMesh>();
                 reticle_mesh.reticleSO = crosshair.tree;
-                reticle_mesh.reticle = crosshair;                
+                reticle_mesh.reticle = crosshair;
                 reticle_mesh.SMR = null;
                 reticle_mesh.Load();
-                reticle_mesh.enabled = false;                
+                reticle_mesh.enabled = false;
                 ReticleTree.Light new_light = new ReticleTree.Light();
                 new_light.color = new RGB(4f, 3f, 0, true);
                 new_light.type = ReticleTree.Light.Type.Powered;
                 reticle_mesh.lights[0].light = new_light;
-                reticle_mesh.lightCols[1] = new Vector4(4f, 3f, 0f, 1f);  
+                reticle_mesh.lightCols[1] = new Vector4(4f, 3f, 0f, 1f);
                 sabca_cam.DefaultFov = 9.52f;
                 sabca_cam.OtherFovs = new float[] { 3f };
                 sabca_cam.AllowFreeZoom = true;
                 sabca_cam.ZoomInAudioEvent = "event:/Effects/Optic/Optic_Zoom_In";
                 sabca_cam.ZoomOutAudioEvent = "event:/Effects/Optic/Optic_Zoom_Out";
                 GameObject old_scale = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/" +
-                    "Sights/GPS/E-Scale").gameObject;                
+                    "Sights/GPS/E-Scale").gameObject;
                 old_scale.transform.Find("e-scale").gameObject.SetActive(false);
-                old_scale.transform.Find("index mark").gameObject.SetActive(false);                
+                old_scale.transform.Find("index mark").gameObject.SetActive(false);
                 Transform old_scale_red = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/" +
-                    "Sights/GPS/E-Scale red");                
+                    "Sights/GPS/E-Scale red");
                 if (old_scale_red != null)
                 {
                     old_scale_red.transform.Find("e-scale").gameObject.SetActive(false);
                     old_scale_red.transform.Find("index mark").gameObject.SetActive(false);
-                }                
+                }
 
                 maingun.WeaponData.FriendlyName = "105mm Gun L7A4 L/52";
 
@@ -429,12 +427,12 @@ namespace CanadianLeopards
                 coax.Name = "7.62mm machine gun C6";
                 AmmoFeed coax_ammo = coax.Weapon.Feed;
                 coax_ammo._totalCycleTime = 0.08f;
-                coax.Weapon.WeaponSound.LoopEventPath = "event:/Weapons/MG_m240_750rmp";                
+                coax.Weapon.WeaponSound.LoopEventPath = "event:/Weapons/MG_m240_750rmp";
 
                 //Replacing loader-hatch MG
                 Transform loader_station;
                 if (leo1a3) { loader_station = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/lafette002"); }
-                else { loader_station = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/lafette001"); }                
+                else { loader_station = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/lafette001"); }
                 GameObject loader_C6 = GameObject.Instantiate(m240_prefab, loader_station);
                 Transform loader_MG3;
                 if (leo1a3) { loader_MG3 = loader_station.transform.Find("MG004"); }
@@ -448,15 +446,15 @@ namespace CanadianLeopards
                 loader_MG3.gameObject.SetActive(false);
                 MG3_box.gameObject.SetActive(false);
                 MeshFilter old_pintle = loader_station.gameObject.GetComponent<MeshFilter>();
-                old_pintle.mesh = null;                
+                old_pintle.mesh = null;
 
                 //Configuring Ammunition                
                 if (ammo_loadout.Value != "German" || ammo_loadout.Value != "german")
                 {
                     LoadoutManager loadout_manager = vehicle.GetComponent<LoadoutManager>();
 
-                    if (ammo_loadout.Value == "historical") { AmmoSwaps.HistoricalLoad(maingun, loadout_manager, mute_logger.Value); }
-                    else if (ammo_loadout.Value == "American" || ammo_loadout.Value == "american") { AmmoSwaps.AmericanLoad(maingun, loadout_manager, mute_logger.Value); }
+                    if (ammo_loadout.Value == "historical") { AmmoSwaps.HistoricalLoad(maingun, loadout_manager); }
+                    else if (ammo_loadout.Value == "American" || ammo_loadout.Value == "american") { AmmoSwaps.AmericanLoad(maingun, loadout_manager); }
                     else
                     {
                         Log("Unknown value for ammo loadout, using mission defaults");
@@ -468,10 +466,10 @@ namespace CanadianLeopards
                 GameObject de_markings;
                 if (leo1a3) { de_markings = vehicle.transform.Find("LEO1A3_markings").gameObject; }
                 else { de_markings = vehicle.transform.Find("LEO1A1_markings").gameObject; }
-                de_markings.SetActive(false);                
+                de_markings.SetActive(false);
                 GameObject cross = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/kreuz").gameObject;
                 Material cross_mat = cross.GetComponent<MeshRenderer>().material;
-                cross.SetActive(false);               
+                cross.SetActive(false);
 
                 GameObject active_hull;
                 MeshRenderer base_mr;
@@ -499,9 +497,10 @@ namespace CanadianLeopards
                 }
                 base_mr = active_hull.GetComponent<MeshRenderer>();
                 if (leo1a3) { base_mr.material.SetTexture("_Albedo", A3_base); }
-                else { base_mr.material.SetTexture("_Albedo", A1_base); }                              
+                else { base_mr.material.SetTexture("_Albedo", A1_base); }
                 if (leo1a3) { base_mr.material.SetTexture("_PaintMask", A3_camomask); }
-                else { base_mr.material.SetTexture("_PaintMask", A1_camomask); }                
+                else { base_mr.material.SetTexture("_PaintMask", A1_camomask); }
+                if (no_threecolour.Value) base_mr.material.SetFloat("_CamoAmount", 0f);
 
                 if (leo1a3)
                 {   
@@ -601,7 +600,10 @@ namespace CanadianLeopards
                 if (leo1a3) { numbers_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/numbers").gameObject; }
                 else { numbers_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/NUMBERS").gameObject; }
                 MeshRenderer numbers = numbers_go.GetComponent<MeshRenderer>();
-                numbers.material.mainTexture = callsigns;                
+                numbers.material.mainTexture = callsigns;
+                numbers.material.color = new Vector4(1f, 1f, 1f, 1f);
+                numbers.material.SetFloat("_Metallic", 0.698f);
+                numbers.material.SetFloat("_Glossiness", 0.346f);
 
                 if (leo1a3) {
                     numbers_go.transform.localPosition = new Vector3(-0.42f, 0.55f, -1.245f);  //moving turret numbers to back of the turret
