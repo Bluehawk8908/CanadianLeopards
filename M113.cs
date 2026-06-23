@@ -63,13 +63,16 @@ namespace CanadianLeopards
             aarVis.OriginalMaterials[dress] = new System.Collections.Generic.List<Material> { dress.material };            
             aarVis.OriginalMaterials[helmet] = new System.Collections.Generic.List<Material> { helmet.material };
             aarVis.OriginalMaterials[webbing] = new System.Collections.Generic.List<Material> { webbing.material };
-           
+
             vehicle_go.transform.Find("M113G_markings/cross").gameObject.SetActive(false);
             Material cross = vehicle_go.transform.Find("M113G_markings/cross").GetComponent<MeshRenderer>().material;
             vehicle_go.transform.Find("M113G_markings/license number").gameObject.SetActive(false);            
             vehicle_go.transform.Find("M113G_markings/unit tactical").gameObject.SetActive(false);
             MeshRenderer numbers = vehicle_go.transform.Find("M113G_markings/digits").GetComponent<MeshRenderer>();
-            numbers.material.mainTexture = callsigns;            
+            numbers.material.mainTexture = callsigns;
+            numbers.material.color = new Vector4(1f, 1f, 1f, 1f);
+            numbers.material.SetFloat("_Metallic", 0.698f);
+            numbers.material.SetFloat("_Glossiness", 0.346f);
             Transform numbers_t = vehicle_go.transform.Find("M113G_markings/digits");
             numbers_t.localPosition = new Vector3(-1.2797f, 1.6f, -0.171f);
             numbers_t.localScale = new Vector3(1.5f, 1.5f, 1f);
@@ -168,7 +171,7 @@ namespace CanadianLeopards
             hull.material.SetTexture("_Albedo", apc);            
             running_gear.material.SetTexture("_Albedo", apc);            
             drivers_hatch.material.SetTexture("_Albedo", apc);            
-            cupola.material.SetTexture("_Albedo", apc);            
+            cupola.material.SetTexture("_Albedo", apc);  
 
             vehicle._friendlyName = "M113A1";
             vehicle_go.AddComponent<CanLepConverted>();
