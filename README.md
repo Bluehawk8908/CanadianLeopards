@@ -18,7 +18,7 @@ Version 1.4 adds the option to convert West German M113 APCs and infntry into Ca
 This mod requires MelonLoader and is intended to be used with Version 0.6.1!
 This mod does NOT require the Vehicle Preloader or Texture Loader.
 
-To install from the ZIP file, extract the "CanadianLeopards.dll" file and the "CanadianLeopards" folder into the /mods/ folder. If done correctly, there should only be PNGs in the /mods/CanadianLeopards/ directory and the DLL file is separate. If upgrading from 1.3 or 1.3.1 to 1.4, you will need to extract the new texture files in addition to the DLL.
+To install from the ZIP file, extract the "CanadianLeopards.dll" file and the "CanadianLeopards" folder into the /mods/ folder. If done correctly, there should only be PNGs and Unity Engine asset bundles (appearing as files without extensions) in the /mods/CanadianLeopards/ directory, while the DLL file is separate.
 
 ***Acknowledgements***  
 Programming: Bluehawk  
@@ -41,6 +41,7 @@ This mod does not copy or incorporate any material wholesale from other modders 
 1.4 - Added Canadian APCs and infantry, improved Leopard primary sight reticles  
 1.4.1 - Proper error-handling for missing textures  
 1.4.2 - Code and asset cleanup  
+1.5 - C1A1 (FN FAL) and field dressing models added to infantry
 ![New decals per version 1.2](https://i.imgur.com/pXAMOAA.jpeg)  
 ![Infantry on the move](https://i.imgur.com/XB1gVrA.jpeg)
 
