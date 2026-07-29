@@ -43,5 +43,4 @@ This mod does not copy or incorporate any material wholesale from other modders 
 1.4.2 - Code and asset cleanup  
 ![New decals per version 1.2](https://i.imgur.com/pXAMOAA.jpeg)  
 ![Infantry on the move](https://i.imgur.com/on9jmqA.jpeg)
-![C1A1 rifles on display](https://i.imgur.com/YTofgjY.jpeg)
 
