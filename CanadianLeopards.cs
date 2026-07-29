@@ -299,7 +299,24 @@ namespace CanadianLeopards
                     troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/FMODWeaponAudio").GetComponent<WeaponAudio>().SingleShotEventPaths = singleShotPaths;
                     troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/G3A3 Rigidbody/WPN_G3A3/G3A3").gameObject.SetActive(false);
                     
-                    c1a1_bundle.Unload(false);                    
+                    c1a1_bundle.Unload(false);
+
+                    int seed = System.DateTime.Now.Millisecond;                    
+                    if (seed <= 600) //approx. 60% chance for spawning a field-dressing taped to the soldier's webbing
+                    {
+                        var dressing_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "dressing"));
+                        if (dressing_bundle == null) MelonLogger.Error("Could not load test asset bundle");
+
+                        GameObject dressing = GameObject.Instantiate(dressing_bundle.LoadAsset("assets/field-dressing.obj") as GameObject);
+                        Transform chest = troop.transform.Find("Troop Base/TRP_SKELETON/soldierHip/soldierSpine1/soldierSpine2/soldierSpine3/soldierChest");
+                        dressing.transform.parent = chest;
+                        dressing.transform.position = chest.position;
+                        dressing.transform.localPosition = new Vector3(-0.1f, 0.1f, 0.12f);
+                        dressing.transform.localRotation = Quaternion.Euler(45f, 275f, 0f);
+                        dressing.transform.localScale = new Vector3(0.03f, 0.03f, 0.03f);
+
+                        dressing_bundle.Unload(false);
+                    }                    
 
                     troop.gameObject.AddComponent<CanLepConverted>();
                     Log(troop.name + " converted to CF Infantry");
