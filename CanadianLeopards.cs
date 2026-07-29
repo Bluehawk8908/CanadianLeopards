@@ -311,7 +311,7 @@ namespace CanadianLeopards
                         Transform chest = troop.transform.Find("Troop Base/TRP_SKELETON/soldierHip/soldierSpine1/soldierSpine2/soldierSpine3/soldierChest");
                         dressing.transform.parent = chest;
                         dressing.transform.position = chest.position;
-                        dressing.transform.localPosition = new Vector3(-0.1f, 0.1f, 0.12f);
+                        dressing.transform.localPosition = new Vector3(-0.1f, 0.075f, 0.12f);
                         dressing.transform.localRotation = Quaternion.Euler(45f, 275f, 0f);
                         dressing.transform.localScale = new Vector3(0.03f, 0.03f, 0.03f);
 
