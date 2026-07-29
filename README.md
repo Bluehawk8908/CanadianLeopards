@@ -12,7 +12,7 @@ As per version 1.2, German-style tactical symbols may be worn, as they appear in
 
 Per version 1.3.1, the new Leopard 1A4 may be converted (reverted?) into a C1, controlled in the config file (excluded by default).  
 
-Version 1.4 adds the option to convert West German M113 APCs and infntry into Canadian assets, toggleable in the config. Toggling "additional decals" with remove the MLC number and NATO map symbols from the APC hull. In lieu of a new model for the C1 (FN FAL), they're equipped with M16s standing in for the C7 rifle.
+Version 1.4 adds the option to convert West German M113 APCs and infantry into Canadian assets, toggleable in the config. Toggling "additional decals" with remove the MLC number and NATO map symbols from the APC hull. 1.5 contributes a new model for the C1A1 rifle (FN FAL), and field dressings, which were often tapped onto the webbing at the left shoulder.  
 
 ***Installation***  
 This mod requires MelonLoader and is intended to be used with Version 0.6.1!
