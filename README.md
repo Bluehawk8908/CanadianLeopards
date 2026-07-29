@@ -40,7 +40,7 @@ This mod does not copy or incorporate any material wholesale from other modders 
 1.3.1 - Compatibility patch for GHPC 20260507  
 1.4 - Added Canadian APCs and infantry, improved Leopard primary sight reticles  
 1.4.1 - Proper error-handling for missing textures
-1.4.2 - Code and asset cleanup
+1.4.2 - Code and asset cleanup  
 ![New decals per version 1.2](https://i.imgur.com/pXAMOAA.jpeg)  
 ![Infantry on the move](https://i.imgur.com/on9jmqA.jpeg)
 
