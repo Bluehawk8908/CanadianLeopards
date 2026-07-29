@@ -3,12 +3,12 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using MelonLoader;
+using MelonLoader.Utils;
 using GHPC;
 using GHPC.Camera;
 using GHPC.Player;
 using GHPC.Mission;
 using GHPC.Infantry;
-using GHPC.Infantry.Weapons;
 using GHPC.AI.Platoons;
 using GHPC.State;
 using GHPC.Vehicle;
@@ -258,22 +258,48 @@ namespace CanadianLeopards
                     aarVis.OriginalMaterials[accoutrements] = new System.Collections.Generic.List<Material> { accoutrements.material };
                     aarVis.OriginalMaterials[helmet] = new System.Collections.Generic.List<Material> { helmet.material };
                     aarVis.OriginalMaterials[webbing] = new System.Collections.Generic.List<Material> { webbing.material };
+                    
+                    //troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/Troop Weapons/--PRIMARY WEAPONS/M16A1").gameObject.SetActive(true);
+                    //troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3").gameObject.SetActive(false);
 
-                    troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/Troop Weapons/--PRIMARY WEAPONS/M16A1").gameObject.SetActive(true);
-                    troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3").gameObject.SetActive(false);
+                    //InfantryAnimation infAnimation = troop.transform.Find("Troop Base").GetComponent<InfantryAnimation>();
+                    //InfantryWeaponSystem m16 = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/Troop Weapons/--PRIMARY WEAPONS/M16A1").GetComponent<InfantryWeaponSystem>();
+                    //TroopWeaponAnimationData m16_anim = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/Troop Weapons/--PRIMARY WEAPONS/M16A1").GetComponent<TroopWeaponAnimationData>();
+                    //InfantryWeaponsManager iwm = troop.GetComponent<InfantryWeaponsManager>();
+                    //InfantryRagdoll ird = troop.transform.Find("Troop Base").GetComponent<InfantryRagdoll>();                    
+                    //iwm._weapons[0] = m16;
+                    //iwm._equippableWeapons[0] = m16;
+                    //iwm.EquippedWeapon = m16;
+                    //ird._weaponRagdolls[0] = m16.transform.GetComponent<WeaponRagdoll>();
+                    //infAnimation._primaryWeapon = m16_anim;
+                    //infAnimation._targetWeapon = m16_anim;
+                    //infAnimation._activeWeapon = m16_anim;
 
-                    InfantryAnimation infAnimation = troop.transform.Find("Troop Base").GetComponent<InfantryAnimation>();
-                    InfantryWeaponSystem m16 = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/Troop Weapons/--PRIMARY WEAPONS/M16A1").GetComponent<InfantryWeaponSystem>();
-                    TroopWeaponAnimationData m16_anim = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/Troop Weapons/--PRIMARY WEAPONS/M16A1").GetComponent<TroopWeaponAnimationData>();
-                    InfantryWeaponsManager iwm = troop.GetComponent<InfantryWeaponsManager>();
-                    InfantryRagdoll ird = troop.transform.Find("Troop Base").GetComponent<InfantryRagdoll>();                    
-                    iwm._weapons[0] = m16;
-                    iwm._equippableWeapons[0] = m16;
-                    iwm.EquippedWeapon = m16;
-                    ird._weaponRagdolls[0] = m16.transform.GetComponent<WeaponRagdoll>();
-                    infAnimation._primaryWeapon = m16_anim;
-                    infAnimation._targetWeapon = m16_anim;
-                    infAnimation._activeWeapon = m16_anim;
+                    var c1a1_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "c1a1"));
+                    if (c1a1_bundle == null) MelonLogger.Error("Could not load test asset bundle");                                     
+                    
+                    GameObject c1a1_rifle = GameObject.Instantiate(c1a1_bundle.LoadAsset("assets/C1A1.obj") as GameObject);                    
+
+                    GameObject default_rifle = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3").gameObject;                   
+                    c1a1_rifle.transform.parent = default_rifle.transform;
+                    c1a1_rifle.transform.position = default_rifle.transform.position;
+                    c1a1_rifle.transform.localPosition = new Vector3(0f, 0.06f, 0.235f);
+                    c1a1_rifle.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+                    c1a1_rifle.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);                    
+                    c1a1_rifle.transform.Find("default").GetComponent<MeshRenderer>().material.color = new Color(0.6604f, 0.6604f, 0.6604f, 1);
+                    
+                    AarVisual weapon_AAR = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3").GetComponent<AarVisual>();
+                    weapon_AAR._renderers = new System.Collections.Generic.List<Renderer> { c1a1_rifle.transform.Find("default").GetComponent<MeshRenderer>() };
+                    weapon_AAR.OriginalMaterials = new System.Collections.Generic.Dictionary<Renderer, System.Collections.Generic.List<Material>>
+                        { [c1a1_rifle.transform.Find("default").GetComponent<MeshRenderer>()] = new System.Collections.Generic.List<Material> 
+                            { c1a1_rifle.transform.Find("default").GetComponent<MeshRenderer>().material } };
+
+                    troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/G3A3/G3A3").gameObject.SetActive(false);
+                    string[] singleShotPaths = { "event:/Infantry/Weapons/MG_HKG3_600rpm" };                    
+                    troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/FMODWeaponAudio").GetComponent<WeaponAudio>().SingleShotEventPaths = singleShotPaths;
+                    troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/G3A3 Rigidbody/WPN_G3A3/G3A3").gameObject.SetActive(false);
+                    
+                    c1a1_bundle.Unload(false);                    
 
                     troop.gameObject.AddComponent<CanLepConverted>();
                     Log(troop.name + " converted to CF Infantry");
