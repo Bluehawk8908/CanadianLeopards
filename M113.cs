@@ -5,6 +5,7 @@ using GHPC.AI.Platoons;
 using GHPC.Vehicle;
 using GHPC.Utility;
 using GHPC.Weapons;
+using GHPC.Effects;
 
 namespace CanadianLeopards
 {
@@ -60,12 +61,12 @@ namespace CanadianLeopards
             webbing.material.SetTexture("_Albedo", canInf);
 
             AarVisual aarVis = gunner.GetComponent<AarVisual>();
-            aarVis.OriginalMaterials[dress] = new System.Collections.Generic.List<Material> { dress.material };            
-            aarVis.OriginalMaterials[helmet] = new System.Collections.Generic.List<Material> { helmet.material };
-            aarVis.OriginalMaterials[webbing] = new System.Collections.Generic.List<Material> { webbing.material };
+            aarVis.OriginalMaterials[dress] = new List<Material> { dress.material };            
+            aarVis.OriginalMaterials[helmet] = new List<Material> { helmet.material };
+            aarVis.OriginalMaterials[webbing] = new List<Material> { webbing.material };
 
             vehicle_go.transform.Find("M113G_markings/cross").gameObject.SetActive(false);
-            Material cross = vehicle_go.transform.Find("M113G_markings/cross").GetComponent<MeshRenderer>().material;
+            Material cross = vehicle_go.transform.Find("M113G_markings/cross").GetComponent<MeshRenderer>().material;            
             vehicle_go.transform.Find("M113G_markings/license number").gameObject.SetActive(false);            
             vehicle_go.transform.Find("M113G_markings/unit tactical").gameObject.SetActive(false);
             MeshRenderer numbers = vehicle_go.transform.Find("M113G_markings/digits").GetComponent<MeshRenderer>();
@@ -101,7 +102,9 @@ namespace CanadianLeopards
             else if (hull_numbers._allValues[1] > 4) { hull_numbers._allValues[1] -= 4; }
             else if (hull_numbers._allValues[1] == 0) { hull_numbers._allValues[1] = 1; }
             hull_numbers._allValues[2] = position_in_platoon + 6; // 6-9 in the texture will become letter codes
-            hull_numbers.RefreshDecals();
+            hull_numbers.RefreshDecals();            
+
+            FlammablesManager fm = vehicle.GetComponent<FlammablesManager>();            
 
             GameObject rear_numbers = new GameObject("rear callsign");
             rear_numbers.transform.parent = vehicle.transform;
@@ -118,6 +121,9 @@ namespace CanadianLeopards
             maple_left.transform.localPosition = new Vector3(-1.29f, 1.745f, 1.5f);
             maple_left.transform.localRotation = Quaternion.Euler(new Vector3(0f, 0f, 90f));
             maple_left.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
+            RendererMaterial maple_left_rm = new RendererMaterial();
+            maple_left_rm.Renderer = maple_left.GetComponent<MeshRenderer>();
+            fm._scorchRendererMaterials.Add(maple_left_rm);
 
             GameObject maple_right = new GameObject("maple_right");
             maple_right.transform.parent = vehicle_go.transform;
@@ -125,36 +131,53 @@ namespace CanadianLeopards
             maple_right.transform.localPosition = new Vector3(1.29f, 1.745f, 1.5f);
             maple_right.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 90f));
             maple_right.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
+            RendererMaterial maple_right_rm = new RendererMaterial();
+            maple_right_rm.Renderer = maple_right.GetComponent<MeshRenderer>();
+            fm._scorchRendererMaterials.Add(maple_right_rm);
+            cross.SetFloat("_Cutoff", 0.5f);
 
             GameObject flag_front = new GameObject("flag_front");
             flag_front.transform.parent = vehicle_go.transform;
-            CanadianLeopardsClass.NewQuad(flag_front, numbers.material, flag);
+            CanadianLeopardsClass.NewQuad(flag_front, cross, flag);
             flag_front.transform.localPosition = new Vector3(1.075f, 1.5f, 2.21f);
             flag_front.transform.localRotation = Quaternion.Euler(new Vector3(315f, 180f, 0f));
             flag_front.transform.localScale = new Vector3(0.08f, 1f, 0.045f);
+            RendererMaterial flag_front_rm = new RendererMaterial();
+            flag_front_rm.Renderer = flag_front.GetComponent<MeshRenderer>();
+            fm._scorchRendererMaterials.Add(flag_front_rm);
 
             GameObject flag_rear = new GameObject("flag_rear");
             flag_rear.transform.parent = vehicle_go.transform;
-            CanadianLeopardsClass.NewQuad(flag_rear, numbers.material, flag);
+            CanadianLeopardsClass.NewQuad(flag_rear, cross, flag);
             flag_rear.transform.localPosition = new Vector3(-1.05f, 1.5f, -1.91f);
             flag_rear.transform.localRotation = Quaternion.Euler(new Vector3(280f, 180f, 180f));
             flag_rear.transform.localScale = new Vector3(0.08f, 1f, 0.045f);
+            RendererMaterial flag_rear_rm = new RendererMaterial();
+            flag_rear_rm.Renderer = flag_rear.GetComponent<MeshRenderer>();
+            fm._scorchRendererMaterials.Add(flag_rear_rm);
 
-            if (additional_decals) { 
+            if (additional_decals) {
+                cross.SetFloat("_Cutoff", 0.2f);
                 GameObject tac_front = new GameObject("tac_front");
                 tac_front.transform.parent = vehicle_go.transform;
-                CanadianLeopardsClass.NewQuad(tac_front, numbers.material, tacAPC);
+                CanadianLeopardsClass.NewQuad(tac_front, cross, tacAPC);
                 tac_front.transform.localPosition = new Vector3(-1.06f, 1.2f, 2.51f);
                 tac_front.transform.localRotation = Quaternion.Euler(new Vector3(315f, 180f, 0f));
                 tac_front.transform.localScale = new Vector3(0.1f, 1f, 0.07f);
                 vehicle.transform.Find("M113G_mesh/low track links").gameObject.SetActive(false);
+                RendererMaterial tac_front_rm = new RendererMaterial();
+                tac_front_rm.Renderer = tac_front.GetComponent<MeshRenderer>();
+                fm._scorchRendererMaterials.Add(tac_front_rm);
 
                 GameObject tac_rear = new GameObject("tac_rear");
                 tac_rear.transform.parent = vehicle_go.transform;
-                CanadianLeopardsClass.NewQuad(tac_rear, numbers.material, tacAPC);
+                CanadianLeopardsClass.NewQuad(tac_rear, cross, tacAPC);
                 tac_rear.transform.localPosition = new Vector3(1.045f, 1.5f, -1.91f);
                 tac_rear.transform.localRotation = Quaternion.Euler(new Vector3(280f, 180f, 180f));
                 tac_rear.transform.localScale = new Vector3(0.1f, 1f, 0.07f);
+                RendererMaterial tac_rear_rm = new RendererMaterial();
+                tac_rear_rm.Renderer = tac_rear.GetComponent<MeshRenderer>();
+                fm._scorchRendererMaterials.Add(tac_rear_rm);
 
                 GameObject mlc = new GameObject("mlc");
                 mlc.transform.parent = vehicle_go.transform;
