@@ -5,18 +5,19 @@ using UnityEngine.AddressableAssets;
 using MelonLoader;
 using MelonLoader.Utils;
 using GHPC;
-using GHPC.Camera;
-using GHPC.Player;
-using GHPC.Mission;
-using GHPC.Infantry;
-using GHPC.AI.Platoons;
 using GHPC.State;
+using GHPC.Mission;
+using GHPC.Player;
 using GHPC.Vehicle;
 using GHPC.Weapons;
+using GHPC.Camera;
 using GHPC.Equipment.Optics;
 using Reticle;
+using GHPC.Effects;
 using GHPC.Effects.Voices;
-
+using GHPC.Infantry;
+using GHPC.AI.Platoons;
+using GHPC.Utility;
 
 namespace CanadianLeopards
 {
@@ -41,7 +42,7 @@ namespace CanadianLeopards
         public static MelonPreferences_Entry<bool> mute_logger;
 
         public static GameObject american_crew_voice = null;
-        public static GameObject m240_prefab = null;
+        public static GameObject m240_prefab = null;        
         public static AmmoFeed cal50 = null;        
         public static ReticleMesh.CachedReticle crosshair;
         static bool activeScene = false;
@@ -134,7 +135,8 @@ namespace CanadianLeopards
             filter.mesh.triangles = new int[] { 0, 1, 2, 2, 1, 3 };
             filter.mesh.RecalculateNormals();
             render.material = mat;
-            render.material.mainTexture = tex;
+            if (mat.shader.name == "ghpc_roundel") { render.material.SetTexture("_colour", tex); }
+            else render.material.mainTexture = tex;
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -226,7 +228,7 @@ namespace CanadianLeopards
             Texture2D mlc = FetchTex(128, 128, mlcPath);            
             Texture2D canInf = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf.png");            
             Texture2D canInf_nm = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf_nm.png", true);
-            Texture2D canInf_sm = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf_sm.png", true);
+            Texture2D canInf_sm = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf_sm.png", true);            
             Texture2D apc = FetchTex(2048, 2048, "Mods/CanadianLeopards/apc.png"); 
             Texture2D flag = FetchTex(196, 98, "Mods/CanadianLeopards/flag.png");
             Texture2D mlcAPC = FetchTex(128, 128, "Mods/CanadianLeopards/mlc_apc.png");
@@ -235,7 +237,7 @@ namespace CanadianLeopards
             Texture2D mapleAPC = (!decals_outlined.Value) ? maple : FetchTex(128, 128, "Mods/CanadianLeopards/maple_black.png");            
 
             //INFANTRY
-            if (convert_infantry.Value) { 
+            if (convert_infantry.Value) {                
                 InfantryUnit[] troops = GameObject.FindObjectsByType<InfantryUnit>(FindObjectsSortMode.None);
                 foreach (var troop in troops)
                 {
@@ -245,20 +247,20 @@ namespace CanadianLeopards
                     SkinnedMeshRenderer accoutrements = troop.transform.Find("Troop Base/BLU_FAZ63_OLIVE/accoutrements").GetComponent<SkinnedMeshRenderer>();
                     SkinnedMeshRenderer helmet = troop.transform.Find("Troop Base/BLU_FAZ63_OLIVE/helmet").GetComponent<SkinnedMeshRenderer>();
                     SkinnedMeshRenderer webbing = troop.transform.Find("Troop Base/BLU_FAZ63_OLIVE/webbing").GetComponent<SkinnedMeshRenderer>();
-                    dress.material.SetTexture("_Albedo", canInf);
-                    dress.material.SetTexture("_Normal", canInf_nm);                    
-                    accoutrements.material.SetTexture("_Albedo", canInf);                    
-                    helmet.material.SetTexture("_Albedo", canInf);
-                    helmet.material.SetTexture("_Normal", canInf_nm);
-                    helmet.material.SetTexture("_Smoothness", canInf_sm);                                        
-                    webbing.material.SetTexture("_Albedo", canInf);
+                    Material canInf_mat = dress.material; 
+                    canInf_mat.SetTexture("_Albedo", canInf);
+                    canInf_mat.SetTexture("_Normal", canInf_nm);
+                    canInf_mat.SetTexture("_Smoothness", canInf_sm);                    
+                    accoutrements.material = canInf_mat;                 
+                    helmet.material = canInf_mat;                                                         
+                    webbing.material = canInf_mat;
 
                     AarVisual aarVis = troop.transform.Find("Troop Base").GetComponent<AarVisual>();
                     aarVis.OriginalMaterials[dress] = new System.Collections.Generic.List<Material> { dress.material };
                     aarVis.OriginalMaterials[accoutrements] = new System.Collections.Generic.List<Material> { accoutrements.material };
                     aarVis.OriginalMaterials[helmet] = new System.Collections.Generic.List<Material> { helmet.material };
                     aarVis.OriginalMaterials[webbing] = new System.Collections.Generic.List<Material> { webbing.material };
-                    
+
                     //troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/Troop Weapons/--PRIMARY WEAPONS/M16A1").gameObject.SetActive(true);
                     //troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3").gameObject.SetActive(false);
 
@@ -283,9 +285,9 @@ namespace CanadianLeopards
                     GameObject default_rifle = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3").gameObject;                   
                     c1a1_rifle.transform.parent = default_rifle.transform;
                     c1a1_rifle.transform.position = default_rifle.transform.position;
-                    c1a1_rifle.transform.localPosition = new Vector3(0f, 0.06f, 0.235f);
+                    c1a1_rifle.transform.localPosition = new Vector3(0f, 0.05f, 0.22f);
                     c1a1_rifle.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
-                    c1a1_rifle.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);                    
+                    c1a1_rifle.transform.localScale = new Vector3(0.51f, 0.51f, 0.51f);                    
                     c1a1_rifle.transform.Find("default").GetComponent<MeshRenderer>().material.color = new Color(0.6604f, 0.6604f, 0.6604f, 1);
                     
                     AarVisual weapon_AAR = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3").GetComponent<AarVisual>();
@@ -295,8 +297,8 @@ namespace CanadianLeopards
                             { c1a1_rifle.transform.Find("default").GetComponent<MeshRenderer>().material } };
 
                     troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/G3A3/G3A3").gameObject.SetActive(false);
-                    string[] singleShotPaths = { "event:/Infantry/Weapons/MG_HKG3_600rpm" };                    
-                    troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/FMODWeaponAudio").GetComponent<WeaponAudio>().SingleShotEventPaths = singleShotPaths;
+                    //string[] singleShotPaths = { "event:/Infantry/Weapons/MG_HKG3_600rpm" };                    
+                    //troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/FMODWeaponAudio").GetComponent<WeaponAudio>().SingleShotEventPaths = singleShotPaths;
                     troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/G3A3 Rigidbody/WPN_G3A3/G3A3").gameObject.SetActive(false);
                     
                     c1a1_bundle.Unload(false);
@@ -316,7 +318,7 @@ namespace CanadianLeopards
                         dressing.transform.localScale = new Vector3(0.03f, 0.03f, 0.03f);
 
                         dressing_bundle.Unload(false);
-                    }                    
+                    }
 
                     troop.gameObject.AddComponent<CanLepConverted>();
                     Log(troop.name + " converted to CF Infantry");
@@ -369,7 +371,7 @@ namespace CanadianLeopards
                 laser_dest._health = 5f;
                 laser_dest._fullHealth = 5f;
                 laser_dest._pressureTolerance = 1f;
-                laser_dest._shockResistance = 0.30f;
+                //laser_dest._shockResistance = 0.30f;
                 laser_dest._name = "Laser Rangefinder";
 
                 fcs.LaserAim = LaserAimMode.ImpactPoint;
@@ -476,6 +478,11 @@ namespace CanadianLeopards
                 Transform loader_station;
                 if (leo1a3) { loader_station = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/lafette002"); }
                 else { loader_station = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/lafette001"); }
+                //var c1a1_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "fn_mag"));
+                //if (c1a1_bundle == null) MelonLogger.Error("Could not load test asset bundle");
+
+                //GameObject fn_mag = GameObject.Instantiate(c1a1_bundle.LoadAsset("assets/FN_MAG.obj") as GameObject, loader_station);
+
                 GameObject loader_C6 = GameObject.Instantiate(m240_prefab, loader_station);
                 Transform loader_MG3;
                 if (leo1a3) { loader_MG3 = loader_station.transform.Find("MG004"); }
@@ -511,7 +518,7 @@ namespace CanadianLeopards
                 else { de_markings = vehicle.transform.Find("LEO1A1_markings").gameObject; }
                 de_markings.SetActive(false);
                 GameObject cross = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/kreuz").gameObject;
-                Material cross_mat = cross.GetComponent<MeshRenderer>().material;
+                Material cross_mat = cross.GetComponent<MeshRenderer>().material;                
                 cross.SetActive(false);
 
                 GameObject active_hull;
@@ -589,13 +596,15 @@ namespace CanadianLeopards
                 if (leo1a3)
                 {
                     maple_left.transform.localPosition += new Vector3(-1.15f, 0.628f, 0.08f);
-                    maple_left.transform.rotation = turret.transform.rotation * Quaternion.Euler(new Vector3(3f, 0f, 63f));                    
+                    maple_left.transform.localRotation = Quaternion.Euler(new Vector3(3f, 0f, 63f));                    
                 }
                 else
                 {
                     maple_left.transform.localPosition += new Vector3(-1.135f, 0.6f, -0.15f);
-                    maple_left.transform.rotation = turret.transform.rotation * Quaternion.Euler(new Vector3(0f, 10f, 60f));                    
-                }                
+                    maple_left.transform.localRotation = Quaternion.Euler(new Vector3(0f, 10f, 60f));                    
+                }
+                RendererMaterial maple_left_rm = new RendererMaterial();
+                maple_left_rm.Renderer = maple_left.GetComponent<MeshRenderer>();
 
                 GameObject maple_right = new GameObject("Mapleleaf_right");
                 maple_right.transform.parent = turret.transform;
@@ -605,13 +614,19 @@ namespace CanadianLeopards
                 if (leo1a3) 
                 {
                     maple_right.transform.localPosition += new Vector3(1.15f, 0.628f, 0.1f);
-                    maple_right.transform.rotation = turret.transform.rotation * Quaternion.Euler(new Vector3(0f, 180f, 62f));                    
+                    maple_right.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 62f));                    
                 }
                 else 
                 { 
                     maple_right.transform.localPosition += new Vector3(1.135f, 0.6f, -0.15f);
-                    maple_right.transform.rotation = turret.transform.rotation * Quaternion.Euler(new Vector3(0f, 170f, 60f));
-                }                                
+                    maple_right.transform.localRotation = Quaternion.Euler(new Vector3(0f, 170f, 60f));
+                }
+                RendererMaterial maple_right_rm = new RendererMaterial();
+                maple_right_rm.Renderer = maple_right.GetComponent<MeshRenderer>();
+
+                FlammablesManager flamables = vehicle.GetComponent<FlammablesManager>();
+                flamables._scorchRendererMaterials.Add(maple_left_rm);
+                flamables._scorchRendererMaterials.Add(maple_right_rm);
 
                 //Turret numbers: Company [1-4], Troop [1-4], Vic [blank, A B C]
                 PlatoonData platoon = vehicle.Platoon;
