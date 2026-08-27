@@ -66,7 +66,9 @@ namespace CanadianLeopards
             aarVis.OriginalMaterials[webbing] = new List<Material> { webbing.material };
 
             vehicle_go.transform.Find("M113G_markings/cross").gameObject.SetActive(false);
-            Material cross = vehicle_go.transform.Find("M113G_markings/cross").GetComponent<MeshRenderer>().material;            
+            Material cross = vehicle_go.transform.Find("M113G_markings/cross").GetComponent<MeshRenderer>().material;
+            cross.SetFloat("_Cutoff", 0.95f);
+            cross.SetFloat("_colourfade", -1f);
             vehicle_go.transform.Find("M113G_markings/license number").gameObject.SetActive(false);            
             vehicle_go.transform.Find("M113G_markings/unit tactical").gameObject.SetActive(false);
             MeshRenderer numbers = vehicle_go.transform.Find("M113G_markings/digits").GetComponent<MeshRenderer>();
@@ -123,7 +125,7 @@ namespace CanadianLeopards
             maple_left.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
             RendererMaterial maple_left_rm = new RendererMaterial();
             maple_left_rm.Renderer = maple_left.GetComponent<MeshRenderer>();
-            fm._scorchRendererMaterials.Add(maple_left_rm);
+            fm._scorchRendererMaterials.Add(maple_left_rm);            
 
             GameObject maple_right = new GameObject("maple_right");
             maple_right.transform.parent = vehicle_go.transform;
@@ -133,11 +135,11 @@ namespace CanadianLeopards
             maple_right.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
             RendererMaterial maple_right_rm = new RendererMaterial();
             maple_right_rm.Renderer = maple_right.GetComponent<MeshRenderer>();
-            fm._scorchRendererMaterials.Add(maple_right_rm);
-            cross.SetFloat("_Cutoff", 0.5f);
+            fm._scorchRendererMaterials.Add(maple_right_rm);            
 
             GameObject flag_front = new GameObject("flag_front");
             flag_front.transform.parent = vehicle_go.transform;
+            cross.SetFloat("_Cutoff", 0.5f);
             CanadianLeopardsClass.NewQuad(flag_front, cross, flag);
             flag_front.transform.localPosition = new Vector3(1.075f, 1.5f, 2.21f);
             flag_front.transform.localRotation = Quaternion.Euler(new Vector3(315f, 180f, 0f));
