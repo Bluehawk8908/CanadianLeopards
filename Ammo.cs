@@ -30,14 +30,12 @@ namespace CanadianLeopards
             AmmoType.AmmoClip clip_sabot = loadout_manager.LoadedAmmoList.AmmoClips[0].ClipType;
             AmmoCodexScriptable codex_sabot = clip_sabot.MinimalPattern[0];
             AmmoType ammo_sabot = codex_sabot.AmmoType;            
-            if (clip_sabot.Name == "DM23 APFSDS-T") {                
-                CanadianLeopardsClass.Log("DM-23 being renamed");
+            if (clip_sabot.Name == "DM23 APFSDS-T") {                 
                 ammo_sabot.Name = "C76 APFSDS-T";
                 clip_sabot.Name = "C76 APFSDS-T";
                 
             }
-            if (clip_sabot.Name == "DM13 APDS-T") { 
-                CanadianLeopardsClass.Log("DM-13 being renamed");
+            if (clip_sabot.Name == "DM13 APDS-T") {                 
                 clip_sabot.Name = "C35 APDS-T";
                 ammo_sabot.Name = "C35 APDS-T";
             }
@@ -75,8 +73,7 @@ namespace CanadianLeopards
             maingun.Feed.AmmoTypeInBreech = null;            
             loadout_manager.SpawnCurrentLoadout();            
             maingun.Feed.Start();            
-            loadout_manager.RegisterAllBallistics();
-            CanadianLeopardsClass.Log("Swapped out HEAT for HESH");           
+            loadout_manager.RegisterAllBallistics();                    
         }
         public static void AmericanLoad(WeaponSystem maingun, LoadoutManager loadout_manager)
         {
@@ -117,8 +114,7 @@ namespace CanadianLeopards
             maingun.Feed.AmmoTypeInBreech = null;            
             loadout_manager.SpawnCurrentLoadout();            
             maingun.Feed.Start();            
-            loadout_manager.RegisterAllBallistics();
-            CanadianLeopardsClass.Log("Loaded M774 sabot and M456A2 heat");
+            loadout_manager.RegisterAllBallistics();            
         }
     }
 }
