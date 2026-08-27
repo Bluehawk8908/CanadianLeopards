@@ -41,7 +41,9 @@ This mod does not copy or incorporate any material wholesale from other modders 
 1.4 - Added Canadian APCs and infantry, improved Leopard primary sight reticles  
 1.4.1 - Proper error-handling for missing textures  
 1.4.2 - Code and asset cleanup  
-1.5 - C1A1 (FN FAL) and field dressing models added to infantry
+1.5 - C1A1 (FN FAL) and field dressing models added to infantry  
+1.5.1 - Compatibility patch for GHPC 20260814  
+1.6 - C6 (FN MAG) model to replace M240C
 ![New decals per version 1.2](https://i.imgur.com/pXAMOAA.jpeg)  
 ![Infantry on the move](https://i.imgur.com/XB1gVrA.jpeg)
 
