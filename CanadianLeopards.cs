@@ -41,8 +41,7 @@ namespace CanadianLeopards
         public static MelonPreferences_Entry<bool> convert_infantry;
         public static MelonPreferences_Entry<bool> mute_logger;
 
-        public static GameObject american_crew_voice = null;
-        public static GameObject m240_prefab = null;        
+        public static GameObject american_crew_voice = null;                
         public static AmmoFeed cal50 = null;        
         public static ReticleMesh.CachedReticle crosshair;
         static bool activeScene = false;
@@ -163,14 +162,13 @@ namespace CanadianLeopards
             
             
             // PREFABS
-            if (m240_prefab == null || american_crew_voice == null || cal50 == null) 
+            if (american_crew_voice == null || cal50 == null) 
             {
                 Vehicle abrams = null;
                 foreach (var vehicle in list)
                 {
                     if (vehicle.UniqueName != "M1") { continue; }
-                    abrams = vehicle;                        
-                    m240_prefab = abrams.transform.Find("IPM1_rig/HULL/TURRET/Turret Scripts/M240_loader").gameObject;
+                    abrams = vehicle; 
                     cal50 = abrams.transform.Find("IPM1_rig/HULL/TURRET/CUPOLA/CUPOLA_GUN/12.7mm Machine Gun M48").GetComponent<AmmoFeed>();
                     Log("Abrams found in scene");
                     break;                  
@@ -180,11 +178,9 @@ namespace CanadianLeopards
                 {
                     var prefabLookups = Object.FindAnyObjectByType<UnitSpawner>().PrefabLookup;
                     AssetReference prefab = prefabLookups.GetPrefab("M1");
-                    abrams = Addressables.LoadAssetAsync<GameObject>(prefab).WaitForCompletion().GetComponent<Vehicle>();
-                    m240_prefab = abrams.transform.Find("Turret Scripts/M240_loader").gameObject;
+                    abrams = Addressables.LoadAssetAsync<GameObject>(prefab).WaitForCompletion().GetComponent<Vehicle>();                    
                     Log("Dummy Abrams fetched");
-                    cal50 = abrams.transform.Find("Cupola Scripts/12.7mm Machine Gun M48").GetComponent<AmmoFeed>(); ;
-                    if (cal50 != null) { Log("M2 Browning AmmoFeed found"); }
+                    cal50 = abrams.transform.Find("Cupola Scripts/12.7mm Machine Gun M48").GetComponent<AmmoFeed>();                    
                 }               
                 american_crew_voice = abrams.GetComponentInChildren<CrewVoiceHandler>().gameObject;                
             }
@@ -243,6 +239,11 @@ namespace CanadianLeopards
                 {
                     if (!troop.name.StartsWith("BW Feldanzug")) { continue; }
                     if (troop.gameObject.GetComponent<CanLepConverted>() != null) { continue; }
+
+                    var c1a1_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "c1a1"));
+                    if (c1a1_bundle == null) MelonLogger.Error("Could not load C1A1 FAL asset bundle");
+                    Texture2D green = c1a1_bundle.LoadAsset<Texture2D>("assets/green.png");
+
                     SkinnedMeshRenderer dress = troop.transform.Find("Troop Base/BLU_FAZ63_OLIVE/dress").GetComponent<SkinnedMeshRenderer>();
                     SkinnedMeshRenderer accoutrements = troop.transform.Find("Troop Base/BLU_FAZ63_OLIVE/accoutrements").GetComponent<SkinnedMeshRenderer>();
                     SkinnedMeshRenderer helmet = troop.transform.Find("Troop Base/BLU_FAZ63_OLIVE/helmet").GetComponent<SkinnedMeshRenderer>();
@@ -250,7 +251,8 @@ namespace CanadianLeopards
                     Material canInf_mat = dress.material; 
                     canInf_mat.SetTexture("_Albedo", canInf);
                     canInf_mat.SetTexture("_Normal", canInf_nm);
-                    canInf_mat.SetTexture("_Smoothness", canInf_sm);                    
+                    canInf_mat.SetTexture("_Smoothness", canInf_sm);
+                    canInf_mat.SetTexture("_regions", green);
                     accoutrements.material = canInf_mat;                 
                     helmet.material = canInf_mat;                                                         
                     webbing.material = canInf_mat;
@@ -261,27 +263,7 @@ namespace CanadianLeopards
                     aarVis.OriginalMaterials[helmet] = new System.Collections.Generic.List<Material> { helmet.material };
                     aarVis.OriginalMaterials[webbing] = new System.Collections.Generic.List<Material> { webbing.material };
 
-                    //troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/Troop Weapons/--PRIMARY WEAPONS/M16A1").gameObject.SetActive(true);
-                    //troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3").gameObject.SetActive(false);
-
-                    //InfantryAnimation infAnimation = troop.transform.Find("Troop Base").GetComponent<InfantryAnimation>();
-                    //InfantryWeaponSystem m16 = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/Troop Weapons/--PRIMARY WEAPONS/M16A1").GetComponent<InfantryWeaponSystem>();
-                    //TroopWeaponAnimationData m16_anim = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/Troop Weapons/--PRIMARY WEAPONS/M16A1").GetComponent<TroopWeaponAnimationData>();
-                    //InfantryWeaponsManager iwm = troop.GetComponent<InfantryWeaponsManager>();
-                    //InfantryRagdoll ird = troop.transform.Find("Troop Base").GetComponent<InfantryRagdoll>();                    
-                    //iwm._weapons[0] = m16;
-                    //iwm._equippableWeapons[0] = m16;
-                    //iwm.EquippedWeapon = m16;
-                    //ird._weaponRagdolls[0] = m16.transform.GetComponent<WeaponRagdoll>();
-                    //infAnimation._primaryWeapon = m16_anim;
-                    //infAnimation._targetWeapon = m16_anim;
-                    //infAnimation._activeWeapon = m16_anim;
-
-                    var c1a1_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "c1a1"));
-                    if (c1a1_bundle == null) MelonLogger.Error("Could not load test asset bundle");                                     
-                    
-                    GameObject c1a1_rifle = GameObject.Instantiate(c1a1_bundle.LoadAsset("assets/C1A1.obj") as GameObject);                    
-
+                    GameObject c1a1_rifle = GameObject.Instantiate(c1a1_bundle.LoadAsset("assets/C1A1.obj") as GameObject);
                     GameObject default_rifle = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3").gameObject;                   
                     c1a1_rifle.transform.parent = default_rifle.transform;
                     c1a1_rifle.transform.position = default_rifle.transform.position;
@@ -307,7 +289,7 @@ namespace CanadianLeopards
                     if (seed <= 600) //approx. 60% chance for spawning a field-dressing taped to the soldier's webbing
                     {
                         var dressing_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "dressing"));
-                        if (dressing_bundle == null) MelonLogger.Error("Could not load test asset bundle");
+                        if (dressing_bundle == null) MelonLogger.Error("Could not load field-dressing asset bundle");
 
                         GameObject dressing = GameObject.Instantiate(dressing_bundle.LoadAsset("assets/field-dressing.obj") as GameObject);
                         Transform chest = troop.transform.Find("Troop Base/TRP_SKELETON/soldierHip/soldierSpine1/soldierSpine2/soldierSpine3/soldierChest");
@@ -340,8 +322,7 @@ namespace CanadianLeopards
 
                 string short_name = vehicle_go.name.Substring(0, 3);
                 if (short_name != "LEO") { continue; }
-                vehicle_go.AddComponent<CanLepConverted>();
-                Log("Found vic named: " + vehicle_go.name);
+                vehicle_go.AddComponent<CanLepConverted>();                
                 bool leo1a3 = false;
                 short_name = vehicle_go.name.Substring(0, 6);
                 if (short_name == "LEO1A3" || short_name == "LEO1A4") { leo1a3 = true; }
@@ -432,8 +413,7 @@ namespace CanadianLeopards
                         vehicle.transform.Find("LEO1A3_mesh/1A3_PZB200").gameObject.SetActive(true);
                         vehicle.transform.Find("LEO1A3_mesh/PERI R12").gameObject.SetActive(false);
                     }
-                    else { vehicle.transform.Find("LEO1A1_mesh/PZB 200").gameObject.SetActive(true); }
-                    Log("Swapping night sights");
+                    else { vehicle.transform.Find("LEO1A1_mesh/PZB 200").gameObject.SetActive(true); }                    
                 }
 
                 //Changing the reticle in the primary sight
@@ -478,33 +458,25 @@ namespace CanadianLeopards
                 Transform loader_station;
                 if (leo1a3) { loader_station = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/lafette002"); }
                 else { loader_station = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/lafette001"); }
-                //var c1a1_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "fn_mag"));
-                //if (c1a1_bundle == null) MelonLogger.Error("Could not load test asset bundle");
+                var fnMag_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "fn_mag"));
+                if (fnMag_bundle == null) MelonLogger.Error("Could not load FN MAG asset bundle");
 
-                //GameObject fn_mag = GameObject.Instantiate(c1a1_bundle.LoadAsset("assets/FN_MAG.obj") as GameObject, loader_station);
-
-                GameObject loader_C6 = GameObject.Instantiate(m240_prefab, loader_station);
-                Transform loader_MG3;
-                if (leo1a3) { loader_MG3 = loader_station.transform.Find("MG004"); }
-                else { loader_MG3 = loader_station.transform.Find("MG3"); }
-                Transform MG3_box;
-                if (leo1a3) { MG3_box = loader_station.transform.Find("MGbox002"); }
-                else { MG3_box = loader_station.transform.Find("MGbox001"); }
-                loader_C6.transform.localPosition = loader_MG3.localPosition + new Vector3(0f, 0f, 0.15f);
-                loader_C6.transform.localRotation = loader_MG3.localRotation;
-                loader_C6.transform.localEulerAngles = new Vector3(-90f, 90f, 90f);
+                GameObject fn_mag = GameObject.Instantiate(fnMag_bundle.LoadAsset("assets/FN_MAG.obj") as GameObject, loader_station);
+                fn_mag.transform.localRotation = Quaternion.Euler(new Vector3(0f, 0f, 180f));
+                fn_mag.transform.localPosition = new Vector3(0f, 0.05f, -0.08f);                
+                GameObject loader_MG3;
+                if (leo1a3) { loader_MG3 = loader_station.transform.Find("MG004").gameObject; }
+                else { loader_MG3 = loader_station.transform.Find("MG3").gameObject; }
                 loader_MG3.gameObject.SetActive(false);
-                MG3_box.gameObject.SetActive(false);
-                MeshFilter old_pintle = loader_station.gameObject.GetComponent<MeshFilter>();
-                old_pintle.mesh = null;
+                fnMag_bundle.Unload(false);                
 
                 //Configuring Ammunition                
                 if (ammo_loadout.Value != "German" || ammo_loadout.Value != "german")
                 {
                     LoadoutManager loadout_manager = vehicle.GetComponent<LoadoutManager>();
 
-                    if (ammo_loadout.Value == "historical") { AmmoSwaps.HistoricalLoad(maingun, loadout_manager); }
-                    else if (ammo_loadout.Value == "American" || ammo_loadout.Value == "american") { AmmoSwaps.AmericanLoad(maingun, loadout_manager); }
+                    if (ammo_loadout.Value == "historical" || ammo_loadout.Value == "Historical" || (ammo_loadout.Value == "HISTORICAL")) { AmmoSwaps.HistoricalLoad(maingun, loadout_manager); }
+                    else if (ammo_loadout.Value == "American" || ammo_loadout.Value == "american" || ammo_loadout.Value == "AMERICAN") { AmmoSwaps.AmericanLoad(maingun, loadout_manager); }
                     else
                     {
                         Log("Unknown value for ammo loadout, using mission defaults");
@@ -583,8 +555,7 @@ namespace CanadianLeopards
                     skirts_cut1.GetComponent<MeshRenderer>().material = base_mr.material;
                     skirts_cut2.GetComponent<MeshRenderer>().material = base_mr.material;
                     wheels.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;                                      
-                }
-                Log("Vehicle repainted");
+                }                
 
                 //The Iron-Cross decals have weird UVs so we need to create custom meshes
                 GameObject turret = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET").gameObject;
@@ -659,9 +630,9 @@ namespace CanadianLeopards
                 else { numbers_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/NUMBERS").gameObject; }
                 MeshRenderer numbers = numbers_go.GetComponent<MeshRenderer>();
                 numbers.material.mainTexture = callsigns;
-                numbers.material.color = new Vector4(1f, 1f, 1f, 1f);
-                numbers.material.SetFloat("_Metallic", 0.698f);
-                numbers.material.SetFloat("_Glossiness", 0.346f);
+                //numbers.material.color = new Vector4(1f, 1f, 1f, 1f);
+                //numbers.material.SetFloat("_Metallic", 0.698f);
+                //numbers.material.SetFloat("_Glossiness", 0.346f);
 
                 if (leo1a3) {
                     numbers_go.transform.localPosition = new Vector3(-0.42f, 0.55f, -1.245f);  //moving turret numbers to back of the turret
