@@ -43,7 +43,8 @@ This mod does not copy or incorporate any material wholesale from other modders 
 1.4.2 - Code and asset cleanup  
 1.5 - C1A1 (FN FAL) and field dressing models added to infantry  
 1.5.1 - Compatibility patch for GHPC 20260814  
-1.6 - C6 (FN MAG) model to replace M240C
+1.6 - C6 (FN MAG) model to replace M240C  
+1.7 - Updated GPS reticle and auto-lead behaviour
 ![New decals per version 1.2](https://i.imgur.com/pXAMOAA.jpeg)  
 ![Infantry on the move](https://i.imgur.com/XB1gVrA.jpeg)
 
