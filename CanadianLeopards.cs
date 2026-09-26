@@ -321,12 +321,12 @@ namespace CanadianLeopards
                 }
 
                 string short_name = vehicle_go.name.Substring(0, 3);
-                if (short_name != "LEO") { continue; }
-                vehicle_go.AddComponent<CanLepConverted>();                
+                if (short_name != "LEO") { continue; }                                
                 bool leo1a3 = false;
                 short_name = vehicle_go.name.Substring(0, 6);
                 if (short_name == "LEO1A3" || short_name == "LEO1A4") { leo1a3 = true; }
                 if (short_name == "LEO1A4" && exclude_1A4.Value == true) { continue; }
+                vehicle_go.AddComponent<CanLepConverted>();
                 vehicle._friendlyName = "Leopard C1";  //New display name
 
                 vehicle.transform.Find("DE Tank Voice").gameObject.SetActive(false); //Adding US Voices
@@ -351,8 +351,7 @@ namespace CanadianLeopards
                 GHPC.Equipment.DestructibleComponent laser_dest = lrf_holder.AddComponent<GHPC.Equipment.DestructibleComponent>();
                 laser_dest._health = 5f;
                 laser_dest._fullHealth = 5f;
-                laser_dest._pressureTolerance = 1f;
-                //laser_dest._shockResistance = 0.30f;
+                laser_dest._pressureTolerance = 1f;                
                 laser_dest._name = "Laser Rangefinder";
 
                 fcs.LaserAim = LaserAimMode.ImpactPoint;
@@ -367,12 +366,10 @@ namespace CanadianLeopards
                 fcs._originalSuperleadMode = true;
                 fcs.ComputerNeedsPower = true;
                 fcs.RecordTraverseRateBuffer = true;
-                fcs._useSeparateLead = false;
-                //fcs._manualModeOnRangeSet = true;
-                //fcs._autoModeOnLase = true;
+                fcs._useSeparateLead = false;                
                 UsableOptic sabca = fcs.MainOptic;
                 sabca.ForceHorizontalReticleAlign = true;
-                sabca.RotateAzimuth = true;
+                sabca.RotateAzimuth = false;
 
                 UnityEngine.Object.Destroy(fcs.OpticalRangefinder);
                 GameObject sabca_go = sabca.gameObject;
@@ -423,12 +420,44 @@ namespace CanadianLeopards
                 reticle_mesh.reticle = crosshair;
                 reticle_mesh.SMR = null;
                 reticle_mesh.Load();
-                reticle_mesh.enabled = false;
+                //reticle_mesh.enabled = false;
+
+                RT_FocalPlane plane = reticle_mesh_go.transform.Find("FFP").GetComponent<RT_FocalPlane>();
+                ReticleTree.Angular ang = (ReticleTree.Angular)plane.fp.elements[0];
+                if (ang.align != ReticleTree.GroupBase.Alignment.Impact) { 
+                    ang.align = ReticleTree.GroupBase.Alignment.Impact;
+                    ReticleTree.Angular aiming_cross = (ReticleTree.Angular)ang.elements[3];
+                    aiming_cross.align = ReticleTree.GroupBase.Alignment.None;
+
+                    ReticleTree.Line upper_line = new ReticleTree.Line(position: new Vector2(0f, 18f), degrees: 90f, length: 2f, thickness: 0.2f);
+                    ReticleTree.Line lower_line = new ReticleTree.Line(position: new Vector2(0f, -18f), degrees: 90f, length: 2f, thickness: 0.2f);
+                    ReticleTree.Line left_line = new ReticleTree.Line(position: new Vector2(18f, 0f), degrees: 0f, length: 2.5f, thickness: 0.2f);
+                    ReticleTree.Line right_line = new ReticleTree.Line(position: new Vector2(-18f, 0f), degrees: 0f, length: 2.5f, thickness: 0.2f);                    
+                    ReticleTree.Circle mysterious_dot = new ReticleTree.Circle(position: new Vector2(0f, 0f), degrees: 0f, radius: 0.5236f, thickness: 0.12f);
+                    upper_line.illumination = ReticleTree.Light.Type.NightIllumination;
+                    lower_line.illumination = ReticleTree.Light.Type.NightIllumination;
+                    left_line.illumination = ReticleTree.Light.Type.NightIllumination;
+                    right_line.illumination = ReticleTree.Light.Type.NightIllumination;                    
+                    mysterious_dot.illumination = ReticleTree.Light.Type.NightIllumination;                    
+                    
+                    plane.fp.elements.Add(new Reticle.ReticleTree.Angular(position: new ReticleTree.Position(-12f, 12f), parent: null, align: ReticleTree.GroupBase.Alignment.Boresight)); //dot
+                    Reticle.ReticleTree.Angular original_ret = (ReticleTree.Angular)plane.fp.elements[0];
+                    Reticle.ReticleTree.Angular new_ang = (ReticleTree.Angular)plane.fp.elements[1];                    
+
+                    original_ret.elements.Add(upper_line); original_ret.elements.Add(lower_line);
+                    original_ret.elements.Add(left_line); original_ret.elements.Add(right_line);                    
+                    new_ang.elements = new System.Collections.Generic.List<ReticleTree.TransformElement> { mysterious_dot };
+                    reticle_mesh.Clear(false);
+                    reticle_mesh.SMR = null;
+                    reticle_mesh.GenerateMesh();
+                    reticle_mesh.Load();
+                }
+
                 ReticleTree.Light new_light = new ReticleTree.Light();
-                new_light.color = new RGB(4f, 3f, 0, true);
+                new_light.color = new RGB(3f, 2f, 0, true);
                 new_light.type = ReticleTree.Light.Type.Powered;
                 reticle_mesh.lights[0].light = new_light;
-                reticle_mesh.lightCols[1] = new Vector4(4f, 3f, 0f, 1f);
+                reticle_mesh.lightCols[1] = new Vector4(3f, 2f, 0f, 1f);
                 sabca_cam.DefaultFov = 9.52f;
                 sabca_cam.OtherFovs = new float[] { 3f };
                 sabca_cam.AllowFreeZoom = true;
@@ -471,7 +500,7 @@ namespace CanadianLeopards
                 fnMag_bundle.Unload(false);                
 
                 //Configuring Ammunition                
-                if (ammo_loadout.Value != "German" || ammo_loadout.Value != "german")
+                if (ammo_loadout.Value != "German" || ammo_loadout.Value != "german" || ammo_loadout.Value != "GERMAN")
                 {
                     LoadoutManager loadout_manager = vehicle.GetComponent<LoadoutManager>();
 
@@ -481,7 +510,6 @@ namespace CanadianLeopards
                     {
                         Log("Unknown value for ammo loadout, using mission defaults");
                     }
-
                 }
 
                 //Texture cosmetics
