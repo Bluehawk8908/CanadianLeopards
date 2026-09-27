@@ -37,6 +37,10 @@ namespace CanadianLeopards
         public static MelonPreferences_Entry<bool> decals_outlined;
         public static MelonPreferences_Entry<bool> additional_decals;
         public static MelonPreferences_Entry<bool> showcase_extras;
+        public static MelonPreferences_Entry<bool> exclude_early_1A1;
+        public static MelonPreferences_Entry<bool> exclude_late_1A1;
+        public static MelonPreferences_Entry<bool> exclude_early_1A3;
+        public static MelonPreferences_Entry<bool> exclude_late_1A3;
         public static MelonPreferences_Entry<bool> exclude_1A4;
         public static MelonPreferences_Entry<bool> convert_infantry;
         public static MelonPreferences_Entry<bool> mute_logger;
@@ -44,8 +48,7 @@ namespace CanadianLeopards
         public static GameObject american_crew_voice = null;                
         public static AmmoFeed cal50 = null;        
         public static ReticleMesh.CachedReticle crosshair;
-        static bool activeScene = false;
-        static bool grafen = false;
+        static bool activeScene = false;        
         
         public override void OnInitializeMelon()
         {
@@ -68,6 +71,18 @@ namespace CanadianLeopards
             showcase_extras = cfg.CreateEntry<bool>("Add 1A3s to Showcase", true);
             showcase_extras.Comment = "Adds 1A3-based Leopard C1s to the Grafenwoehr Showcase.";
 
+            exclude_early_1A1 = cfg.CreateEntry<bool>("Exclude early 1A1s from conversion", false);
+            exclude_early_1A1.Comment = ("1A1A1 and 'A2 will remain in German service and retain old features");
+
+            exclude_late_1A1 = cfg.CreateEntry<bool>("Exclude late 1A1s from conversion", false);
+            exclude_late_1A1.Comment = ("1A1A3 and 'A4 will remain in German service and retain old features");
+
+            exclude_early_1A3 = cfg.CreateEntry<bool>("Exclude early 1A3s from conversion", false);
+            exclude_early_1A3.Comment = ("1A3 and 1A3A1 will remain in German service and retain old features");
+
+            exclude_late_1A3 = cfg.CreateEntry<bool>("Exclude late 1A3s from conversion", false);
+            exclude_late_1A3.Comment = ("1A3A3 and '3A4 will remain in German service and retain old features");
+
             exclude_1A4 = cfg.CreateEntry<bool>("Exclude 1A4 from conversion", true);
             exclude_1A4.Comment = "The Leopard 1A4 will remain in German service and retain all its unique features.";
 
@@ -85,17 +100,16 @@ namespace CanadianLeopards
 
         void ShowcaseExtras()
         {
-            var prefabLookups = Object.FindAnyObjectByType<UnitSpawner>().PrefabLookup;
+            var prefabLookups = UnitSpawner.Instance.PrefabLookup;
             AssetReference prefab1A3 = prefabLookups.GetPrefab("LEO1A3");
             AssetReference prefab1A3A3 = prefabLookups.GetPrefab("LEO1A3A3");
             GameObject Leo1A3 = Addressables.LoadAssetAsync<GameObject>(prefab1A3).WaitForCompletion();
             GameObject Leo1A3A3 = Addressables.LoadAssetAsync<GameObject>(prefab1A3A3).WaitForCompletion();
             Leo1A3.GetComponent<Vehicle>().Allegiance = Faction.Neutral;
-            Leo1A3A3.GetComponent<Vehicle>().Allegiance = Faction.Neutral;
-            GameObject.Instantiate(Leo1A3, new Vector3(1423.7f, 26.416f, 1433.9f), Quaternion.Euler(0.573f, 233.87f, 358.75f));
-            GameObject.Instantiate(Leo1A3A3, new Vector3(1399.87f, 25.7f, 1436.75f), Quaternion.Euler(0.925f, 230.98f, 358.284f));                      
+            Leo1A3A3.GetComponent<Vehicle>().Allegiance = Faction.Neutral;            
+            GameObject.Instantiate(Leo1A3, new Vector3(1423.7f, 26.416f, 1433.9f), Quaternion.Euler(0.573f, 233.87f, 358.75f));            
+            GameObject.Instantiate(Leo1A3A3, new Vector3(1399.87f, 25.7f, 1436.75f), Quaternion.Euler(0.925f, 230.98f, 358.284f));                
             Log("Spawned additional vehicles on the range.");
-            grafen = true;            
         }
 
         public static Texture2D FetchTex(int x, int y, string path)
@@ -126,12 +140,12 @@ namespace CanadianLeopards
         {
             MeshFilter filter = go.AddComponent<MeshFilter>();
             MeshRenderer render = go.AddComponent<MeshRenderer>();
-            filter.mesh = new Mesh();
-            filter.mesh.vertices = new Vector3[] {
-                            new Vector3(1f, 0 , 1f), new Vector3(1f, 0, -1f), new Vector3(-1f, 0, 1f), new Vector3(-1f, 0, -1f) };
-            filter.mesh.uv = new Vector2[] {
-                            new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 1), new Vector2(0, 0) };
-            filter.mesh.triangles = new int[] { 0, 1, 2, 2, 1, 3 };
+            filter.mesh = new Mesh
+            {
+                vertices = new Vector3[] { new Vector3(1f, 0 , 1f), new Vector3(1f, 0, -1f), new Vector3(-1f, 0, 1f), new Vector3(-1f, 0, -1f) },
+                uv = new Vector2[] { new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 1), new Vector2(0, 0) },
+                triangles = new int[] { 0, 1, 2, 2, 1, 3 }
+            };
             filter.mesh.RecalculateNormals();
             render.material = mat;
             if (mat.shader.name == "ghpc_roundel") { render.material.SetTexture("_colour", tex); }
@@ -142,8 +156,7 @@ namespace CanadianLeopards
         {
             if (sceneName == "MainMenu2_Scene" || sceneName == "t64_menu" || sceneName == "MainMenu2-1_Scene") 
             {
-                activeScene = false;
-                grafen = false; 
+                activeScene = false;                
                 return;               
             }
 
@@ -156,11 +169,11 @@ namespace CanadianLeopards
 
         public IEnumerator Conversion(GameState _)
         {
+            if (showcase_extras.Value && !PlayerInput.Instance.IsMapActive) PlayerInput.Instance.SetPlayerUnit(PlayerInput.Instance.CurrentPlayerUnit); //resets camera  
             if (activeScene == true) { yield break; }
             activeScene = true;
             Vehicle[] list = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
-            
-            
+
             // PREFABS
             if (american_crew_voice == null || cal50 == null) 
             {
@@ -321,11 +334,17 @@ namespace CanadianLeopards
                 }
 
                 string short_name = vehicle_go.name.Substring(0, 3);
-                if (short_name != "LEO") { continue; }                                
+                if (short_name != "LEO") { continue; }
+                
+                if ((vehicle.UniqueName == "LEO1A1" || vehicle.UniqueName == "LEO1A1A2") && exclude_early_1A1.Value) { continue; }
+                if ((vehicle.UniqueName == "LEO1A1A3" || vehicle.UniqueName == "LEO1A1A4") && exclude_late_1A1.Value) { continue; }
+                if ((vehicle.UniqueName == "LEO1A3" || vehicle.UniqueName == "LEO1A3A1") && exclude_early_1A3.Value) { continue; }
+                if ((vehicle.UniqueName == "LEO1A3A2" || vehicle.UniqueName == "LEO1A3A3") && exclude_late_1A3.Value) { continue; }
+                if (vehicle.UniqueName == "LEO1A4" && exclude_1A4.Value) { continue; }                
+
                 bool leo1a3 = false;
-                short_name = vehicle_go.name.Substring(0, 6);
-                if (short_name == "LEO1A3" || short_name == "LEO1A4") { leo1a3 = true; }
-                if (short_name == "LEO1A4" && exclude_1A4.Value == true) { continue; }
+                short_name = vehicle.UniqueName.Substring(0, 6);
+                if (short_name == "LEO1A3" || short_name == "LEO1A4") { leo1a3 = true; }                
                 vehicle_go.AddComponent<CanLepConverted>();
                 vehicle._friendlyName = "Leopard C1";  //New display name
 
@@ -351,7 +370,7 @@ namespace CanadianLeopards
                 GHPC.Equipment.DestructibleComponent laser_dest = lrf_holder.AddComponent<GHPC.Equipment.DestructibleComponent>();
                 laser_dest._health = 5f;
                 laser_dest._fullHealth = 5f;
-                laser_dest._pressureTolerance = 1f;                
+                laser_dest._pressureTolerance = 1f;
                 laser_dest._name = "Laser Rangefinder";
 
                 fcs.LaserAim = LaserAimMode.ImpactPoint;
@@ -366,14 +385,12 @@ namespace CanadianLeopards
                 fcs._originalSuperleadMode = true;
                 fcs.ComputerNeedsPower = true;
                 fcs.RecordTraverseRateBuffer = true;
-                fcs._useSeparateLead = false;                
+                fcs._useSeparateLead = false;
                 UsableOptic sabca = fcs.MainOptic;
                 sabca.ForceHorizontalReticleAlign = true;
                 sabca.RotateAzimuth = false;
-
-                UnityEngine.Object.Destroy(fcs.OpticalRangefinder);
-                GameObject sabca_go = sabca.gameObject;
-                CameraSlot sabca_cam = sabca_go.GetComponent<CameraSlot>();
+                UnityEngine.Object.Destroy(fcs.OpticalRangefinder);                
+                CameraSlot sabca_cam = sabca.slot;
 
                 //Ensuring PZB-200 Night Sight
                 if (fcs.NightOptic == null || fcs.NightOptic.name == "PERI-R12")
@@ -402,16 +419,16 @@ namespace CanadianLeopards
                     pzb_cam._pairedOptic = pzb;
                     pzb_cam.IsLinkedNightSight = true;
                     pzb_cam._isUsableByWeapon = true;
-                    pzb_cam.NightSightAtNightOnly = false;
-                    fcs.NightOptic = pzb;
-                    fcs.RegisterOptic(pzb);
+                    fcs.NightOptic = pzb;                    
+                    
                     if (leo1a3)
                     {
                         vehicle.transform.Find("LEO1A3_mesh/1A3_PZB200").gameObject.SetActive(true);
                         vehicle.transform.Find("LEO1A3_mesh/PERI R12").gameObject.SetActive(false);
                     }
-                    else { vehicle.transform.Find("LEO1A1_mesh/PZB 200").gameObject.SetActive(true); }                    
+                    else { vehicle.transform.Find("LEO1A1_mesh/PZB 200").gameObject.SetActive(true); }
                 }
+                sabca_cam.NightSightAtNightOnly = false;
 
                 //Changing the reticle in the primary sight
                 GameObject reticle_mesh_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS/Reticle Mesh").gameObject;
@@ -419,12 +436,11 @@ namespace CanadianLeopards
                 reticle_mesh.reticleSO = crosshair.tree;
                 reticle_mesh.reticle = crosshair;
                 reticle_mesh.SMR = null;
-                reticle_mesh.Load();
-                //reticle_mesh.enabled = false;
+                reticle_mesh.Load();                
 
                 RT_FocalPlane plane = reticle_mesh_go.transform.Find("FFP").GetComponent<RT_FocalPlane>();
                 ReticleTree.Angular ang = (ReticleTree.Angular)plane.fp.elements[0];
-                if (ang.align != ReticleTree.GroupBase.Alignment.Impact) { 
+                if (ang.align != ReticleTree.GroupBase.Alignment.Impact) {
                     ang.align = ReticleTree.GroupBase.Alignment.Impact;
                     ReticleTree.Angular aiming_cross = (ReticleTree.Angular)ang.elements[3];
                     aiming_cross.align = ReticleTree.GroupBase.Alignment.None;
@@ -432,20 +448,20 @@ namespace CanadianLeopards
                     ReticleTree.Line upper_line = new ReticleTree.Line(position: new Vector2(0f, 18f), degrees: 90f, length: 2f, thickness: 0.2f);
                     ReticleTree.Line lower_line = new ReticleTree.Line(position: new Vector2(0f, -18f), degrees: 90f, length: 2f, thickness: 0.2f);
                     ReticleTree.Line left_line = new ReticleTree.Line(position: new Vector2(18f, 0f), degrees: 0f, length: 2.5f, thickness: 0.2f);
-                    ReticleTree.Line right_line = new ReticleTree.Line(position: new Vector2(-18f, 0f), degrees: 0f, length: 2.5f, thickness: 0.2f);                    
+                    ReticleTree.Line right_line = new ReticleTree.Line(position: new Vector2(-18f, 0f), degrees: 0f, length: 2.5f, thickness: 0.2f);
                     ReticleTree.Circle mysterious_dot = new ReticleTree.Circle(position: new Vector2(0f, 0f), degrees: 0f, radius: 0.5236f, thickness: 0.12f);
                     upper_line.illumination = ReticleTree.Light.Type.NightIllumination;
                     lower_line.illumination = ReticleTree.Light.Type.NightIllumination;
                     left_line.illumination = ReticleTree.Light.Type.NightIllumination;
-                    right_line.illumination = ReticleTree.Light.Type.NightIllumination;                    
-                    mysterious_dot.illumination = ReticleTree.Light.Type.NightIllumination;                    
-                    
+                    right_line.illumination = ReticleTree.Light.Type.NightIllumination;
+                    mysterious_dot.illumination = ReticleTree.Light.Type.NightIllumination;
+
                     plane.fp.elements.Add(new Reticle.ReticleTree.Angular(position: new ReticleTree.Position(-12f, 12f), parent: null, align: ReticleTree.GroupBase.Alignment.Boresight)); //dot
                     Reticle.ReticleTree.Angular original_ret = (ReticleTree.Angular)plane.fp.elements[0];
-                    Reticle.ReticleTree.Angular new_ang = (ReticleTree.Angular)plane.fp.elements[1];                    
+                    Reticle.ReticleTree.Angular new_ang = (ReticleTree.Angular)plane.fp.elements[1];
 
                     original_ret.elements.Add(upper_line); original_ret.elements.Add(lower_line);
-                    original_ret.elements.Add(left_line); original_ret.elements.Add(right_line);                    
+                    original_ret.elements.Add(left_line); original_ret.elements.Add(right_line);
                     new_ang.elements = new System.Collections.Generic.List<ReticleTree.TransformElement> { mysterious_dot };
                     reticle_mesh.Clear(false);
                     reticle_mesh.SMR = null;
@@ -453,9 +469,11 @@ namespace CanadianLeopards
                     reticle_mesh.Load();
                 }
 
-                ReticleTree.Light new_light = new ReticleTree.Light();
-                new_light.color = new RGB(3f, 2f, 0, true);
-                new_light.type = ReticleTree.Light.Type.Powered;
+                ReticleTree.Light new_light = new ReticleTree.Light
+                {
+                    color = new RGB(3f, 2f, 0, true),
+                    type = ReticleTree.Light.Type.Powered
+                };
                 reticle_mesh.lights[0].light = new_light;
                 reticle_mesh.lightCols[1] = new Vector4(3f, 2f, 0f, 1f);
                 sabca_cam.DefaultFov = 9.52f;
@@ -602,8 +620,7 @@ namespace CanadianLeopards
                     maple_left.transform.localPosition += new Vector3(-1.135f, 0.6f, -0.15f);
                     maple_left.transform.localRotation = Quaternion.Euler(new Vector3(0f, 10f, 60f));                    
                 }
-                RendererMaterial maple_left_rm = new RendererMaterial();
-                maple_left_rm.Renderer = maple_left.GetComponent<MeshRenderer>();
+                RendererMaterial maple_left_rm = new RendererMaterial { Renderer = maple_left.GetComponent<MeshRenderer>() };                
 
                 GameObject maple_right = new GameObject("Mapleleaf_right");
                 maple_right.transform.parent = turret.transform;
@@ -620,8 +637,7 @@ namespace CanadianLeopards
                     maple_right.transform.localPosition += new Vector3(1.135f, 0.6f, -0.15f);
                     maple_right.transform.localRotation = Quaternion.Euler(new Vector3(0f, 170f, 60f));
                 }
-                RendererMaterial maple_right_rm = new RendererMaterial();
-                maple_right_rm.Renderer = maple_right.GetComponent<MeshRenderer>();
+                RendererMaterial maple_right_rm = new RendererMaterial { Renderer = maple_right.GetComponent<MeshRenderer>() };                
 
                 FlammablesManager flamables = vehicle.GetComponent<FlammablesManager>();
                 flamables._scorchRendererMaterials.Add(maple_left_rm);
@@ -789,11 +805,7 @@ namespace CanadianLeopards
                 }
                 Log("Conversions complete on " + vehicle_go.name);
             }
-
-            if (grafen) {
-                Unit newVic = Object.FindAnyObjectByType<Unit>();
-                gameManager.GetComponent<PlayerInput>().SetPlayerUnit(newVic);
-            }
+                        
             activeScene = false;
             yield break;            
         }
