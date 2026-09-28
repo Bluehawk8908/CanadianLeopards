@@ -1,6 +1,7 @@
 # Canadian Leopards for Gunner, HEAT, PC!
 
-![Troop of C1s in column](https://i.imgur.com/tgBVZG4.jpeg)
+![Troop of C1s in column](https://imgur.com/UE1ipHA.jpg)
+![Gunner's view of a T-55 at point blank range!](https://imgur.com/YEoP9Xf.jpg)
 
 This mod overhauls the German Leopard 1 main battle tanks of all the various sub-models to represent Leopard C1s at CFB Lahr under the 4th Canadian Mechanized Brigade Group. This includes replacing the gunner's primary sight with an approximation of the SABCA Cobelda fire control system, adding a laser rangefinder and automatic lead calculation; enforcing the use of the PZB-200 night sight; replacing the MG3 machine-guns with the C6 (FN MAG, known to the Americans as the M240); alternating the suite of ammunition; removing and replacing decals, including troop callsigns on the turrets; and last but not least, replacing German crew voices with English ones.  
 
