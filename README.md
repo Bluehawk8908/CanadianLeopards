@@ -1,8 +1,7 @@
 # Canadian Leopards for Gunner, HEAT, PC!
 
-![Troop of C1s in column](https://imgur.com/UE1ipHA.jpg)
-![Gunner's view of a T-55 at point blank range!](https://imgur.com/YEoP9Xf.jpg)
-
+![A column of C1s ready to march](https://i.imgur.com/UE1ipHA.jpeg)  
+  
 This mod overhauls the German Leopard 1 main battle tanks of all the various sub-models to represent Leopard C1s at CFB Lahr under the 4th Canadian Mechanized Brigade Group. This includes replacing the gunner's primary sight with an approximation of the SABCA Cobelda fire control system, adding a laser rangefinder and automatic lead calculation; enforcing the use of the PZB-200 night sight; replacing the MG3 machine-guns with the C6 (FN MAG, known to the Americans as the M240); alternating the suite of ammunition; removing and replacing decals, including troop callsigns on the turrets; and last but not least, replacing German crew voices with English ones.  
 
 Ammunition options are: "historical" per Canadian armour in the 80s (APDS or APFSDS and HESH only, challenging to use!), "American" (M774 APFSDS and M456A2 HEAT only), or "German" for the default German ammunitions (Sabot, HEAT and HESH). When using the Canadian loadout, DM23 is redesignated C76, DM13 becomes C35, and DM512 is L35.  
@@ -45,7 +44,9 @@ This mod does not copy or incorporate any material wholesale from other modders 
 1.5 - C1A1 (FN FAL) and field dressing models added to infantry  
 1.5.1 - Compatibility patch for GHPC 20260814  
 1.6 - C6 (FN MAG) model to replace M240C  
-1.7 - Updated GPS reticle and auto-lead behaviour
-![New decals per version 1.2](https://i.imgur.com/pXAMOAA.jpeg)  
-![Infantry on the move](https://i.imgur.com/XB1gVrA.jpeg)
+1.7 - Updated GPS reticle and auto-lead behaviour  
+1.7.1 - Added configuration options to omit certain Leopard variants from conversion  
+ 
+![Infantry on the move](https://i.imgur.com/XB1gVrA.jpeg)  
+![Viewing a T-55 through the gunner's sight at point-blank range!](https://i.imgur.com/YEoP9Xf.jpeg)  
 
