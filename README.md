@@ -23,6 +23,8 @@ To install from the ZIP file, extract the "CanadianLeopards.dll" file and the "C
 ***Acknowledgements***  
 Programming: Bluehawk  
 Texture work: Agentgummby  
+Original models C1A1 and field dressing: Bluehawk  
+Modified M240 model by Bluehawk, based on original GHPC asset by Harry for Radian Simulations  
 
 This mod does not copy or incorporate any material wholesale from other modders not named above, but greatly utilized the availability of the source code written by [ATLAS](https://github.com/thebeninator), [RoyZ](https://github.com/RoyZ-iwnl) and [Andrix](https://github.com/Andrix44/) as learning tools. Their contributions to the GHPC modding scene are enormous, as are utilities like [UnityExplorer](https://github.com/sinai-dev/UnityExplorer).
 
