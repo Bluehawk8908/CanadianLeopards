@@ -282,8 +282,8 @@ namespace CanadianLeopards
                 if (short_name == "LEO2") { Leo2.Convert(vehicle); continue; }
                 
                 short_name = vehicle_go.name.Substring(0, 6);
-                if (short_name == "LEO1A1" || short_name == "LEO1A4") { Leo1A1.Convert(vehicle, american_crew_voice, fn_mag, A1_base, A1_camomask, maple, callsigns, tac, mlc); }
-                if (short_name == "LEO1A3") { Leo1A3.Convert(vehicle, american_crew_voice, marder_crosshair, fn_mag, A3_base, A3_camomask, maple, callsigns, tac, mlc); }
+                if (short_name == "LEO1A1") { Leo1A1.Convert(vehicle, american_crew_voice, fn_mag, A1_base, A1_camomask, maple, callsigns, tac, mlc); }
+                if (short_name == "LEO1A3" || short_name == "LEO1A4") { Leo1A3.Convert(vehicle, american_crew_voice, marder_crosshair, fn_mag, A3_base, A3_camomask, maple, callsigns, tac, mlc); }
             }  
             yield break;            
         }
