@@ -10,14 +10,9 @@ using GHPC.Mission;
 using GHPC.Player;
 using GHPC.Vehicle;
 using GHPC.Weapons;
-using GHPC.Camera;
-using GHPC.Equipment.Optics;
 using Reticle;
-using GHPC.Effects;
 using GHPC.Effects.Voices;
 using GHPC.Infantry;
-using GHPC.AI.Platoons;
-using GHPC.Utility;
 
 namespace CanadianLeopards
 {
@@ -47,8 +42,8 @@ namespace CanadianLeopards
 
         public static GameObject american_crew_voice = null;                
         public static AmmoFeed cal50 = null;        
-        public static ReticleMesh.CachedReticle crosshair;
-        static bool activeScene = false;        
+        public static ReticleMesh.CachedReticle marder_crosshair;
+        public static GameObject emes15;
         
         public override void OnInitializeMelon()
         {
@@ -91,12 +86,8 @@ namespace CanadianLeopards
 
             mute_logger = cfg.CreateEntry<bool>("Mute log messages", false);
             mute_logger.Comment = "Mutes log messages in the MelonLoader console.";
-        }
-
-        public static void Log(string text)
-        {
-            if (!mute_logger.Value) { MelonLogger.Msg(text); }
-        }
+            Utilities.mute_logger = mute_logger.Value;
+        }   
 
         void ShowcaseExtras()
         {
@@ -109,54 +100,15 @@ namespace CanadianLeopards
             Leo1A3A3.GetComponent<Vehicle>().Allegiance = Faction.Neutral;            
             GameObject.Instantiate(Leo1A3, new Vector3(1423.7f, 26.416f, 1433.9f), Quaternion.Euler(0.573f, 233.87f, 358.75f));            
             GameObject.Instantiate(Leo1A3A3, new Vector3(1399.87f, 25.7f, 1436.75f), Quaternion.Euler(0.925f, 230.98f, 358.284f));                
-            Log("Spawned additional vehicles on the range.");
+            Utilities.Log("Spawned additional vehicles on the range.");
         }
 
-        public static Texture2D FetchTex(int x, int y, string path)
-        {
-            Texture2D temp = new Texture2D(x, y);
-            try
-            {
-                byte[] data = File.ReadAllBytes(path);
-                temp.LoadImage(data);
-            }
-            catch (FileNotFoundException e) { MelonLogger.Error(e); }
-            return temp;
-        }
-
-        public static Texture2D FetchTex(int x, int y, string path, bool linear)
-        {
-            Texture2D temp = new Texture2D(x, y, TextureFormat.DXT5, true, linear);
-            try
-            {
-                byte[] data = File.ReadAllBytes(path);
-                temp.LoadImage(data);
-            }
-            catch (FileNotFoundException e) { MelonLogger.Error(e); }
-            return temp;
-        }
-
-        public static void NewQuad(GameObject go, Material mat, Texture2D tex)
-        {
-            MeshFilter filter = go.AddComponent<MeshFilter>();
-            MeshRenderer render = go.AddComponent<MeshRenderer>();
-            filter.mesh = new Mesh
-            {
-                vertices = new Vector3[] { new Vector3(1f, 0 , 1f), new Vector3(1f, 0, -1f), new Vector3(-1f, 0, 1f), new Vector3(-1f, 0, -1f) },
-                uv = new Vector2[] { new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 1), new Vector2(0, 0) },
-                triangles = new int[] { 0, 1, 2, 2, 1, 3 }
-            };
-            filter.mesh.RecalculateNormals();
-            render.material = mat;
-            if (mat.shader.name == "ghpc_roundel") { render.material.SetTexture("_colour", tex); }
-            else render.material.mainTexture = tex;
-        }
+        
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            if (sceneName == "MainMenu2_Scene" || sceneName == "t64_menu" || sceneName == "MainMenu2-1_Scene") 
+            if (sceneName == "MainMenu2_Scene" || sceneName == "t64_menu" || sceneName == "MainMenu2-1_Scene" || sceneName == "leo2_menu") 
             {
-                activeScene = false;                
                 return;               
             }
 
@@ -170,93 +122,87 @@ namespace CanadianLeopards
         public IEnumerator Conversion(GameState _)
         {
             if (showcase_extras.Value && !PlayerInput.Instance.IsMapActive) PlayerInput.Instance.SetPlayerUnit(PlayerInput.Instance.CurrentPlayerUnit); //resets camera  
-            if (activeScene == true) { yield break; }
-            activeScene = true;
-            Vehicle[] list = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
 
-            // PREFABS
-            if (american_crew_voice == null || cal50 == null) 
+            //PREFABS
+            if (american_crew_voice == null || cal50 == null)
             {
-                Vehicle abrams = null;
-                foreach (var vehicle in list)
-                {
-                    if (vehicle.UniqueName != "M1") { continue; }
-                    abrams = vehicle; 
-                    cal50 = abrams.transform.Find("IPM1_rig/HULL/TURRET/CUPOLA/CUPOLA_GUN/12.7mm Machine Gun M48").GetComponent<AmmoFeed>();
-                    Log("Abrams found in scene");
-                    break;                  
-                }
-                
-                if (abrams == null)
-                {
-                    var prefabLookups = Object.FindAnyObjectByType<UnitSpawner>().PrefabLookup;
-                    AssetReference prefab = prefabLookups.GetPrefab("M1");
-                    abrams = Addressables.LoadAssetAsync<GameObject>(prefab).WaitForCompletion().GetComponent<Vehicle>();                    
-                    Log("Dummy Abrams fetched");
-                    cal50 = abrams.transform.Find("Cupola Scripts/12.7mm Machine Gun M48").GetComponent<AmmoFeed>();                    
-                }               
-                american_crew_voice = abrams.GetComponentInChildren<CrewVoiceHandler>().gameObject;                
+                var prefabLookups = Object.FindAnyObjectByType<UnitSpawner>().PrefabLookup;
+                AssetReference prefab = prefabLookups.GetPrefab("M1");
+                GameObject abrams = Addressables.LoadAssetAsync<GameObject>(prefab).WaitForCompletion();
+                cal50 = abrams.transform.Find("Cupola Scripts/12.7mm Machine Gun M48").GetComponent<AmmoFeed>();
+                american_crew_voice = abrams.GetComponentInChildren<CrewVoiceHandler>().gameObject;
+                Utilities.Log("12.7 ammo and US voices fetched from prefab");
             }
-            
-            if (crosshair.mesh == null)
-            { 
-                Vehicle marder = null;
-                foreach (var vehicle in list)
-                {
-                    if (!vehicle.UniqueName.StartsWith("MARDER")) { continue; }
-                    marder = vehicle;
-                    crosshair = marder.transform.Find("Marder1A1_rig/hull/turret/PERI Z11/NFOV reticle").GetComponent<ReticleMesh>().reticle;
-                    Log("Marder found in scene");
-                    break;
-                }
 
-                if (marder == null)
-                {
-                    var prefabLookups = Object.FindAnyObjectByType<UnitSpawner>().PrefabLookup;
-                    AssetReference prefab = prefabLookups.GetPrefab("MARDERA1PLUS");
-                    marder = Addressables.LoadAssetAsync<GameObject>(prefab).WaitForCompletion().GetComponent<Vehicle>();
-                    ReticleMesh prefabReticle = marder.transform.Find("FCS and sights/PERI Z11/NFOV reticle").GetComponent<ReticleMesh>();
-                    prefabReticle.Load();
-                    crosshair = prefabReticle.reticle;                    
-                    Log("Dummy Marder fetched");
-                }                
+            if (marder_crosshair.mesh == null)
+            {
+                var prefabLookups = Object.FindAnyObjectByType<UnitSpawner>().PrefabLookup;
+                AssetReference prefab = prefabLookups.GetPrefab("MARDERA1PLUS");
+                GameObject marder = Addressables.LoadAssetAsync<GameObject>(prefab).WaitForCompletion();
+                ReticleMesh prefabReticle = marder.transform.Find("FCS and sights/PERI Z11/NFOV reticle").GetComponent<ReticleMesh>();
+                prefabReticle.Load();
+                marder_crosshair = prefabReticle.reticle;
+                Utilities.Log("TZF graticule fetched from prefab");
             }
+
+            if (emes15 == null)
+            {
+                var prefabLookups = Object.FindAnyObjectByType<UnitSpawner>().PrefabLookup;
+                AssetReference prefab = prefabLookups.GetPrefab("LEO2A3");
+                GameObject leo2 = Addressables.LoadAssetAsync<GameObject>(prefab).WaitForCompletion();                
+                emes15 = leo2.transform.Find("---TURRET SCRIPTS---/GPS").gameObject;
+                Utilities.Log("EMES-15 fetched from prefab");
+            }
+
+            //EXTERNAL ASSETS
+            var fnMag_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "fn_mag"));
+            if (fnMag_bundle == null) MelonLogger.Error("Could not load FN MAG asset bundle");
+            GameObject fn_mag = fnMag_bundle.LoadAsset("assets/FN_MAG.obj") as GameObject;            
+            fnMag_bundle.Unload(false);
+
+            var c1a1_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "c1a1"));
+            if (c1a1_bundle == null) MelonLogger.Error("Could not load C1A1 FAL asset bundle");
+            GameObject c1a1_prefab = c1a1_bundle.LoadAsset("assets/C1A1.obj") as GameObject;
+            Texture2D green = c1a1_bundle.LoadAsset<Texture2D>("assets/green.png");
+            c1a1_bundle.Unload(false);
+
+            var dressing_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "dressing"));
+            if (dressing_bundle == null) MelonLogger.Error("Could not load field-dressing asset bundle");
+            GameObject dressing_prefab = dressing_bundle.LoadAsset("assets/field-dressing.obj") as GameObject;
+            dressing_bundle.Unload(false);
 
             //TEXTURES
             string maplePath = decals_outlined.Value ? "Mods/CanadianLeopards/maple.png" : "Mods/CanadianLeopards/maple_black.png";
-            Texture2D maple = FetchTex(128, 128, maplePath);
+            Texture2D maple = Utilities.FetchTex(128, 128, maplePath);
             string A1_basePath = carc_green.Value ? "Mods/CanadianLeopards/green.png" : "Mods/CanadianLeopards/1A1_base.png";
-            Texture2D A1_base = FetchTex(2048, 2048, A1_basePath);
-            Texture2D A3_base = FetchTex(2048, 2048, "Mods/CanadianLeopards/1A3_base.png"); 
+            Texture2D A1_base = Utilities.FetchTex(2048, 2048, A1_basePath);
+            Texture2D A3_base = Utilities.FetchTex(2048, 2048, "Mods/CanadianLeopards/1A3_base.png"); 
             string callsignsPath = decals_outlined.Value ? "Mods/CanadianLeopards/callsigns.png": "Mods/CanadianLeopards/callsigns_black.png";            
-            Texture2D callsigns = FetchTex(512, 64, callsignsPath);             
-            Texture2D A1_camomask = FetchTex(2048, 2048, "Mods/CanadianLeopards/A1_mask.png");            
-            Texture2D A3_camomask = FetchTex(2048, 2048, "Mods/CanadianLeopards/A3_mask.png");
-            Texture2D tac = FetchTex(128, 98, "Mods/CanadianLeopards/tac.png");            
+            Texture2D callsigns = Utilities.FetchTex(512, 64, callsignsPath);             
+            Texture2D A1_camomask = Utilities.FetchTex(2048, 2048, "Mods/CanadianLeopards/A1_mask.png");            
+            Texture2D A3_camomask = Utilities.FetchTex(2048, 2048, "Mods/CanadianLeopards/A3_mask.png");
+            Texture2D tac = Utilities.FetchTex(128, 98, "Mods/CanadianLeopards/tac.png");            
             string mlcPath = decals_outlined.Value ? "Mods/CanadianLeopards/mlc.png": "Mods/CanadianLeopards/mlc_black.png";
-            Texture2D mlc = FetchTex(128, 128, mlcPath);            
-            Texture2D canInf = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf.png");            
-            Texture2D canInf_nm = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf_nm.png", true);
-            Texture2D canInf_sm = FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf_sm.png", true);            
-            Texture2D apc = FetchTex(2048, 2048, "Mods/CanadianLeopards/apc.png"); 
-            Texture2D flag = FetchTex(196, 98, "Mods/CanadianLeopards/flag.png");
-            Texture2D mlcAPC = FetchTex(128, 128, "Mods/CanadianLeopards/mlc_apc.png");
-            Texture2D tacAPC = FetchTex(148, 88, "Mods/CanadianLeopards/tac_apc.png");
-            Texture2D callsignsAPC = (!decals_outlined.Value) ? callsigns : FetchTex(512, 64, "Mods/CanadianLeopards/callsigns_black.png");
-            Texture2D mapleAPC = (!decals_outlined.Value) ? maple : FetchTex(128, 128, "Mods/CanadianLeopards/maple_black.png");            
+            Texture2D mlc = Utilities.FetchTex(128, 128, mlcPath);            
+            Texture2D canInf = Utilities.FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf.png");            
+            Texture2D canInf_nm = Utilities.FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf_nm.png", true);
+            Texture2D canInf_sm = Utilities.FetchTex(1024, 1024, "Mods/CanadianLeopards/can_inf_sm.png", true);            
+            Texture2D apc = Utilities.FetchTex(2048, 2048, "Mods/CanadianLeopards/apc.png"); 
+            Texture2D flag = Utilities.FetchTex(196, 98, "Mods/CanadianLeopards/flag.png");
+            Texture2D mlcAPC = Utilities.FetchTex(128, 128, "Mods/CanadianLeopards/mlc_apc.png");
+            Texture2D tacAPC = Utilities.FetchTex(148, 88, "Mods/CanadianLeopards/tac_apc.png");
+            Texture2D callsignsAPC = (!decals_outlined.Value) ? callsigns : Utilities.FetchTex(512, 64, "Mods/CanadianLeopards/callsigns_black.png");
+            Texture2D mapleAPC = (!decals_outlined.Value) ? maple : Utilities.FetchTex(128, 128, "Mods/CanadianLeopards/maple_black.png");            
 
             //INFANTRY
             if (convert_infantry.Value) {                
                 InfantryUnit[] troops = GameObject.FindObjectsByType<InfantryUnit>(FindObjectsSortMode.None);
+                
                 foreach (var troop in troops)
                 {
                     if (!troop.name.StartsWith("BW Feldanzug")) { continue; }
                     if (troop.gameObject.GetComponent<CanLepConverted>() != null) { continue; }
-
-                    var c1a1_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "c1a1"));
-                    if (c1a1_bundle == null) MelonLogger.Error("Could not load C1A1 FAL asset bundle");
-                    Texture2D green = c1a1_bundle.LoadAsset<Texture2D>("assets/green.png");
-
+                    
                     SkinnedMeshRenderer dress = troop.transform.Find("Troop Base/BLU_FAZ63_OLIVE/dress").GetComponent<SkinnedMeshRenderer>();
                     SkinnedMeshRenderer accoutrements = troop.transform.Find("Troop Base/BLU_FAZ63_OLIVE/accoutrements").GetComponent<SkinnedMeshRenderer>();
                     SkinnedMeshRenderer helmet = troop.transform.Find("Troop Base/BLU_FAZ63_OLIVE/helmet").GetComponent<SkinnedMeshRenderer>();
@@ -269,17 +215,15 @@ namespace CanadianLeopards
                     accoutrements.material = canInf_mat;                 
                     helmet.material = canInf_mat;                                                         
                     webbing.material = canInf_mat;
-
+                    
                     AarVisual aarVis = troop.transform.Find("Troop Base").GetComponent<AarVisual>();
                     aarVis.OriginalMaterials[dress] = new System.Collections.Generic.List<Material> { dress.material };
                     aarVis.OriginalMaterials[accoutrements] = new System.Collections.Generic.List<Material> { accoutrements.material };
                     aarVis.OriginalMaterials[helmet] = new System.Collections.Generic.List<Material> { helmet.material };
                     aarVis.OriginalMaterials[webbing] = new System.Collections.Generic.List<Material> { webbing.material };
-
-                    GameObject c1a1_rifle = GameObject.Instantiate(c1a1_bundle.LoadAsset("assets/C1A1.obj") as GameObject);
-                    GameObject default_rifle = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3").gameObject;                   
-                    c1a1_rifle.transform.parent = default_rifle.transform;
-                    c1a1_rifle.transform.position = default_rifle.transform.position;
+                    
+                    GameObject default_rifle = troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3").gameObject;
+                    GameObject c1a1_rifle = GameObject.Instantiate(c1a1_prefab, default_rifle.transform); 
                     c1a1_rifle.transform.localPosition = new Vector3(0f, 0.05f, 0.22f);
                     c1a1_rifle.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
                     c1a1_rifle.transform.localScale = new Vector3(0.51f, 0.51f, 0.51f);                    
@@ -290,37 +234,30 @@ namespace CanadianLeopards
                     weapon_AAR.OriginalMaterials = new System.Collections.Generic.Dictionary<Renderer, System.Collections.Generic.List<Material>>
                         { [c1a1_rifle.transform.Find("default").GetComponent<MeshRenderer>()] = new System.Collections.Generic.List<Material> 
                             { c1a1_rifle.transform.Find("default").GetComponent<MeshRenderer>().material } };
-
-                    troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/G3A3/G3A3").gameObject.SetActive(false);
-                    //string[] singleShotPaths = { "event:/Infantry/Weapons/MG_HKG3_600rpm" };                    
-                    //troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/FMODWeaponAudio").GetComponent<WeaponAudio>().SingleShotEventPaths = singleShotPaths;
+                    
+                    troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/G3A3/G3A3").gameObject.SetActive(false);                    
                     troop.transform.Find("Troop Base/TRP_SKELETON/weaponmain/G3A3/G3A3 Rigidbody/WPN_G3A3/G3A3").gameObject.SetActive(false);
                     
-                    c1a1_bundle.Unload(false);
-
                     int seed = System.DateTime.Now.Millisecond;                    
                     if (seed <= 600) //approx. 60% chance for spawning a field-dressing taped to the soldier's webbing
                     {
-                        var dressing_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "dressing"));
-                        if (dressing_bundle == null) MelonLogger.Error("Could not load field-dressing asset bundle");
-
-                        GameObject dressing = GameObject.Instantiate(dressing_bundle.LoadAsset("assets/field-dressing.obj") as GameObject);
                         Transform chest = troop.transform.Find("Troop Base/TRP_SKELETON/soldierHip/soldierSpine1/soldierSpine2/soldierSpine3/soldierChest");
+                        GameObject dressing = GameObject.Instantiate(dressing_prefab, chest);
                         dressing.transform.parent = chest;
                         dressing.transform.position = chest.position;
                         dressing.transform.localPosition = new Vector3(-0.1f, 0.075f, 0.12f);
                         dressing.transform.localRotation = Quaternion.Euler(45f, 275f, 0f);
-                        dressing.transform.localScale = new Vector3(0.03f, 0.03f, 0.03f);
-
-                        dressing_bundle.Unload(false);
+                        dressing.transform.localScale = new Vector3(0.03f, 0.03f, 0.03f);                       
                     }
 
                     troop.gameObject.AddComponent<CanLepConverted>();
-                    Log(troop.name + " converted to CF Infantry");
+                    Utilities.Log(troop.name + " converted to CF Infantry");
                 }
             }
 
             //VEHICLES
+            Vehicle[] list = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
+            
             foreach (var vehicle in list)
             {
                 GameObject vehicle_go = vehicle.gameObject;
@@ -330,483 +267,24 @@ namespace CanadianLeopards
                 if (vehicle.UniqueName == "M113G" && convert_infantry.Value) {
                     M113.Convert(vehicle, vehicle_go, cal50, additional_decals.Value,
                         mapleAPC, canInf, canInf_nm, canInf_sm, callsignsAPC, apc, flag, tacAPC, mlcAPC);
-                    Log("Conversions complete on " + vehicle_go.name);
+                    Utilities.Log("Conversions complete on " + vehicle_go.name);
                 }
 
                 string short_name = vehicle_go.name.Substring(0, 3);
-                if (short_name != "LEO") { continue; }
-                
+                if (short_name != "LEO") { continue; }                
                 if ((vehicle.UniqueName == "LEO1A1" || vehicle.UniqueName == "LEO1A1A2") && exclude_early_1A1.Value) { continue; }
                 if ((vehicle.UniqueName == "LEO1A1A3" || vehicle.UniqueName == "LEO1A1A4") && exclude_late_1A1.Value) { continue; }
                 if ((vehicle.UniqueName == "LEO1A3" || vehicle.UniqueName == "LEO1A3A1") && exclude_early_1A3.Value) { continue; }
                 if ((vehicle.UniqueName == "LEO1A3A2" || vehicle.UniqueName == "LEO1A3A3") && exclude_late_1A3.Value) { continue; }
                 if (vehicle.UniqueName == "LEO1A4" && exclude_1A4.Value) { continue; }                
 
-                bool leo1a3 = false;
-                short_name = vehicle.UniqueName.Substring(0, 6);
-                if (short_name == "LEO1A3" || short_name == "LEO1A4") { leo1a3 = true; }                
-                vehicle_go.AddComponent<CanLepConverted>();
-                vehicle._friendlyName = "Leopard C1";  //New display name
-
-                vehicle.transform.Find("DE Tank Voice").gameObject.SetActive(false); //Adding US Voices
-                GameObject new_voice = GameObject.Instantiate(american_crew_voice, vehicle.transform);
-                new_voice.transform.localPosition = new Vector3(0, 0, 0);
-                new_voice.transform.localEulerAngles = new Vector3(0, 0, 0);
-                CrewVoiceHandler handler = new_voice.GetComponent<CrewVoiceHandler>();
-                handler._chassis = vehicle._chassis as NwhChassis;
-                vehicle._crewVoiceHandler = handler;
-                new_voice.SetActive(true);
-
-                WeaponSystem maingun = vehicle.GetComponent<WeaponsManager>().Weapons[0].Weapon;
-                WeaponSystemInfo coax = vehicle.GetComponent<WeaponsManager>().Weapons[1];
-                FireControlSystem fcs = vehicle.GetComponentInChildren<FireControlSystem>();
-
-                //Adding Laser-Range Finder and Lead-Calculator
-                GameObject lrf_holder = new GameObject("Laser Rangefinder");
-                lrf_holder.transform.SetParent(vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS"));
-                if (leo1a3) { lrf_holder.transform.localPosition = new Vector3(0f, 0f, 0.5f); }
-                else { lrf_holder.transform.localPosition = new Vector3(0f, 0f, 0.2f); }
-                lrf_holder.transform.localRotation = Quaternion.identity;
-                GHPC.Equipment.DestructibleComponent laser_dest = lrf_holder.AddComponent<GHPC.Equipment.DestructibleComponent>();
-                laser_dest._health = 5f;
-                laser_dest._fullHealth = 5f;
-                laser_dest._pressureTolerance = 1f;
-                laser_dest._name = "Laser Rangefinder";
-
-                fcs.LaserAim = LaserAimMode.ImpactPoint;
-                fcs.LaserComponent = laser_dest;
-                fcs.LaserOrigin = lrf_holder.transform;
-                fcs.MaxLaserRange = 4000f;
-                fcs.DynamicLead = true;
-                fcs.SuperleadWeapon = true;
-                fcs.SuperelevateWeapon = true;
-                fcs.TraverseBufferSeconds = 0.5f;
-                fcs._autoDumpViaPalmSwitches = true;
-                fcs._originalSuperleadMode = true;
-                fcs.ComputerNeedsPower = true;
-                fcs.RecordTraverseRateBuffer = true;
-                fcs._useSeparateLead = false;
-                UsableOptic sabca = fcs.MainOptic;
-                sabca.ForceHorizontalReticleAlign = true;
-                sabca.RotateAzimuth = false;
-                UnityEngine.Object.Destroy(fcs.OpticalRangefinder);                
-                CameraSlot sabca_cam = sabca.slot;
-
-                //Ensuring PZB-200 Night Sight
-                if (fcs.NightOptic == null || fcs.NightOptic.name == "PERI-R12")
-                {
-                    GameObject pzb_go;
-                    GameObject aux_go;
-                    if (leo1a3)
-                    {
-                        pzb_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/1A3 mantlet/--Gun Scripts--/PZB-200").gameObject;
-                        aux_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/1A3 mantlet/--Gun Scripts--/Aux sight TZF1A").gameObject;
-                    }
-                    else
-                    {
-                        pzb_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/Mantlet/--Gun Scripts--/PZB-200").gameObject;
-                        aux_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/Mantlet/--Gun Scripts--/Aux sight TZF1A").gameObject;
-                    }
-                    pzb_go.SetActive(true);
-                    UsableOptic pzb = pzb_go.GetComponent<UsableOptic>();
-                    pzb.ReticleActive = true;
-                    pzb.StabsActive = true;
-                    CameraSlot pzb_cam = pzb_go.GetComponent<CameraSlot>();
-                    CameraSlot aux_cam = aux_go.GetComponent<CameraSlot>();
-                    pzb_cam.LinkedDaySight = sabca_cam;
-                    sabca_cam.LinkedNightSight = pzb_cam;
-                    aux_cam.LinkedNightSight = pzb_cam;
-                    pzb_cam._pairedOptic = pzb;
-                    pzb_cam.IsLinkedNightSight = true;
-                    pzb_cam._isUsableByWeapon = true;
-                    fcs.NightOptic = pzb;                    
-                    
-                    if (leo1a3)
-                    {
-                        vehicle.transform.Find("LEO1A3_mesh/1A3_PZB200").gameObject.SetActive(true);
-                        vehicle.transform.Find("LEO1A3_mesh/PERI R12").gameObject.SetActive(false);
-                    }
-                    else { vehicle.transform.Find("LEO1A1_mesh/PZB 200").gameObject.SetActive(true); }
-                }
-                sabca_cam.NightSightAtNightOnly = false;
-
-                //Changing the reticle in the primary sight
-                GameObject reticle_mesh_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS/Reticle Mesh").gameObject;
-                ReticleMesh reticle_mesh = reticle_mesh_go.GetComponent<ReticleMesh>();
-                reticle_mesh.reticleSO = crosshair.tree;
-                reticle_mesh.reticle = crosshair;
-                reticle_mesh.SMR = null;
-                reticle_mesh.Load();                
-
-                RT_FocalPlane plane = reticle_mesh_go.transform.Find("FFP").GetComponent<RT_FocalPlane>();
-                ReticleTree.Angular ang = (ReticleTree.Angular)plane.fp.elements[0];
-                if (ang.align != ReticleTree.GroupBase.Alignment.Impact) {
-                    ang.align = ReticleTree.GroupBase.Alignment.Impact;
-                    ReticleTree.Angular aiming_cross = (ReticleTree.Angular)ang.elements[3];
-                    aiming_cross.align = ReticleTree.GroupBase.Alignment.None;
-
-                    ReticleTree.Line upper_line = new ReticleTree.Line(position: new Vector2(0f, 18f), degrees: 90f, length: 2f, thickness: 0.2f);
-                    ReticleTree.Line lower_line = new ReticleTree.Line(position: new Vector2(0f, -18f), degrees: 90f, length: 2f, thickness: 0.2f);
-                    ReticleTree.Line left_line = new ReticleTree.Line(position: new Vector2(18f, 0f), degrees: 0f, length: 2.5f, thickness: 0.2f);
-                    ReticleTree.Line right_line = new ReticleTree.Line(position: new Vector2(-18f, 0f), degrees: 0f, length: 2.5f, thickness: 0.2f);
-                    ReticleTree.Circle mysterious_dot = new ReticleTree.Circle(position: new Vector2(0f, 0f), degrees: 0f, radius: 0.5236f, thickness: 0.12f);
-                    upper_line.illumination = ReticleTree.Light.Type.NightIllumination;
-                    lower_line.illumination = ReticleTree.Light.Type.NightIllumination;
-                    left_line.illumination = ReticleTree.Light.Type.NightIllumination;
-                    right_line.illumination = ReticleTree.Light.Type.NightIllumination;
-                    mysterious_dot.illumination = ReticleTree.Light.Type.NightIllumination;
-
-                    plane.fp.elements.Add(new Reticle.ReticleTree.Angular(position: new ReticleTree.Position(-12f, 12f), parent: null, align: ReticleTree.GroupBase.Alignment.Boresight)); //dot
-                    Reticle.ReticleTree.Angular original_ret = (ReticleTree.Angular)plane.fp.elements[0];
-                    Reticle.ReticleTree.Angular new_ang = (ReticleTree.Angular)plane.fp.elements[1];
-
-                    original_ret.elements.Add(upper_line); original_ret.elements.Add(lower_line);
-                    original_ret.elements.Add(left_line); original_ret.elements.Add(right_line);
-                    new_ang.elements = new System.Collections.Generic.List<ReticleTree.TransformElement> { mysterious_dot };
-                    reticle_mesh.Clear(false);
-                    reticle_mesh.SMR = null;
-                    reticle_mesh.GenerateMesh();
-                    reticle_mesh.Load();
-                }
-
-                ReticleTree.Light new_light = new ReticleTree.Light
-                {
-                    color = new RGB(3f, 2f, 0, true),
-                    type = ReticleTree.Light.Type.Powered
-                };
-                reticle_mesh.lights[0].light = new_light;
-                reticle_mesh.lightCols[1] = new Vector4(3f, 2f, 0f, 1f);
-                sabca_cam.DefaultFov = 9.52f;
-                sabca_cam.OtherFovs = new float[] { 3f };
-                sabca_cam.AllowFreeZoom = true;
-                sabca_cam.ZoomInAudioEvent = "event:/Effects/Optic/Optic_Zoom_In";
-                sabca_cam.ZoomOutAudioEvent = "event:/Effects/Optic/Optic_Zoom_Out";
-                GameObject old_scale = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/" +
-                    "Sights/GPS/E-Scale").gameObject;
-                old_scale.transform.Find("e-scale").gameObject.SetActive(false);
-                old_scale.transform.Find("index mark").gameObject.SetActive(false);
-                Transform old_scale_red = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/" +
-                    "Sights/GPS/E-Scale red");
-                if (old_scale_red != null)
-                {
-                    old_scale_red.transform.Find("e-scale").gameObject.SetActive(false);
-                    old_scale_red.transform.Find("index mark").gameObject.SetActive(false);
-                }
-
-                maingun.WeaponData.FriendlyName = "105mm Gun L7A4 L/52";
-
-                //Replacing Coax MG
-                coax.Name = "7.62mm machine gun C6";
-                AmmoFeed coax_ammo = coax.Weapon.Feed;
-                coax_ammo._totalCycleTime = 0.08f;
-                coax.Weapon.WeaponSound.LoopEventPath = "event:/Weapons/MG_m240_750rmp";
-
-                //Replacing loader-hatch MG
-                Transform loader_station;
-                if (leo1a3) { loader_station = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/lafette002"); }
-                else { loader_station = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/lafette001"); }
-                var fnMag_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/CanadianLeopards", "fn_mag"));
-                if (fnMag_bundle == null) MelonLogger.Error("Could not load FN MAG asset bundle");
-
-                GameObject fn_mag = GameObject.Instantiate(fnMag_bundle.LoadAsset("assets/FN_MAG.obj") as GameObject, loader_station);
-                fn_mag.transform.localRotation = Quaternion.Euler(new Vector3(0f, 0f, 180f));
-                fn_mag.transform.localPosition = new Vector3(0f, 0.05f, -0.08f);                
-                GameObject loader_MG3;
-                if (leo1a3) { loader_MG3 = loader_station.transform.Find("MG004").gameObject; }
-                else { loader_MG3 = loader_station.transform.Find("MG3").gameObject; }
-                loader_MG3.gameObject.SetActive(false);
-                fnMag_bundle.Unload(false);                
-
-                //Configuring Ammunition                
-                if (ammo_loadout.Value != "German" || ammo_loadout.Value != "german" || ammo_loadout.Value != "GERMAN")
-                {
-                    LoadoutManager loadout_manager = vehicle.GetComponent<LoadoutManager>();
-
-                    if (ammo_loadout.Value == "historical" || ammo_loadout.Value == "Historical" || (ammo_loadout.Value == "HISTORICAL")) { AmmoSwaps.HistoricalLoad(maingun, loadout_manager); }
-                    else if (ammo_loadout.Value == "American" || ammo_loadout.Value == "american" || ammo_loadout.Value == "AMERICAN") { AmmoSwaps.AmericanLoad(maingun, loadout_manager); }
-                    else
-                    {
-                        Log("Unknown value for ammo loadout, using mission defaults");
-                    }
-                }
-
-                //Texture cosmetics
-                GameObject de_markings;
-                if (leo1a3) { de_markings = vehicle.transform.Find("LEO1A3_markings").gameObject; }
-                else { de_markings = vehicle.transform.Find("LEO1A1_markings").gameObject; }
-                de_markings.SetActive(false);
-                GameObject cross = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/kreuz").gameObject;
-                Material cross_mat = cross.GetComponent<MeshRenderer>().material;                
-                cross.SetActive(false);
-
-                GameObject active_hull;
-                MeshRenderer base_mr;
-                if (leo1a3)
-                {
-                    active_hull = vehicle.transform.Find("LEO1A3_mesh/1A3_hull").gameObject;
-                }
-                else
-                {
-                    GameObject hull_early = vehicle.transform.Find("LEO1A1_mesh/hull_early").gameObject;
-                    GameObject hull_mid = vehicle.transform.Find("LEO1A1_mesh/hull_mid").gameObject;
-                    GameObject hull_late = vehicle.transform.Find("LEO1A1_mesh/hull_late").gameObject;
-                    if (hull_early.activeSelf == true)
-                    {
-                        active_hull = hull_early;
-                    }
-                    else if (hull_mid.activeSelf == true)
-                    {
-                        active_hull = hull_mid;
-                    }
-                    else
-                    {
-                        active_hull = hull_late;
-                    }
-                }
-                base_mr = active_hull.GetComponent<MeshRenderer>();
-                if (leo1a3) { base_mr.material.SetTexture("_Albedo", A3_base); }
-                else { base_mr.material.SetTexture("_Albedo", A1_base); }
-                if (leo1a3) { base_mr.material.SetTexture("_PaintMask", A3_camomask); }
-                else { base_mr.material.SetTexture("_PaintMask", A1_camomask); }
-                if (no_threecolour.Value) base_mr.material.SetFloat("_CamoAmount", 0f);
-
-                if (leo1a3)
-                {   
-                    GameObject a3_turret = vehicle.transform.Find("LEO1A3_mesh/A3 turret").gameObject;
-                    GameObject a3_skirt_cut = vehicle.transform.Find("LEO1A3_mesh/a3_skirt_cut").gameObject;
-                    GameObject a3_skirt_full = vehicle.transform.Find("LEO1A3_mesh/a3_skirt_full").gameObject;
-                    GameObject a3_wheels = vehicle.transform.Find("LEO1A3_mesh/running gear").gameObject;
-                    a3_turret.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;
-                    a3_skirt_cut.GetComponent<MeshRenderer>().material = base_mr.material;
-                    a3_skirt_full.GetComponent<MeshRenderer>().material = base_mr.material;
-                    a3_wheels.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;                    
-                }
-                else
-                {    
-                    GameObject turret_early = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/turret_early").gameObject;
-                    GameObject turret_late = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/turret_late").gameObject;
-                    GameObject gun_barrel = vehicle.transform.Find("LEO1A1_mesh/gun").gameObject;
-                    GameObject side_skirts = vehicle.transform.Find("LEO1A1_mesh/side skirts").gameObject;
-                    GameObject skirt_full = vehicle.transform.Find("LEO1A1_mesh/skirt_full").gameObject;
-                    GameObject skirts_cut0 = vehicle.transform.Find("LEO1A1_mesh/skirts_cut0").gameObject;
-                    GameObject skirts_cut1 = vehicle.transform.Find("LEO1A1_mesh/skirts_cut1").gameObject;
-                    GameObject skirts_cut2 = vehicle.transform.Find("LEO1A1_mesh/skirts_cut2").gameObject;
-                    GameObject wheels = vehicle.transform.Find("LEO1A1_mesh/running gear").gameObject;
-                    turret_early.GetComponent<MeshRenderer>().material = base_mr.material;
-                    turret_late.GetComponent<MeshRenderer>().material = base_mr.material;
-                    gun_barrel.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;
-                    side_skirts.GetComponent<MeshRenderer>().material = base_mr.material;
-                    skirt_full.GetComponent<MeshRenderer>().material = base_mr.material;
-                    skirts_cut0.GetComponent<MeshRenderer>().material = base_mr.material;
-                    skirts_cut1.GetComponent<MeshRenderer>().material = base_mr.material;
-                    skirts_cut2.GetComponent<MeshRenderer>().material = base_mr.material;
-                    wheels.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;                                      
-                }                
-
-                //The Iron-Cross decals have weird UVs so we need to create custom meshes
-                GameObject turret = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET").gameObject;
-                GameObject maple_left = new GameObject("Mapleleaf_left");
-                maple_left.transform.parent = turret.transform;
-                maple_left.transform.position = turret.transform.position;
-                NewQuad(maple_left, cross_mat, maple);
-                maple_left.transform.localScale = new Vector3(0.165f, 0.165f, 0.165f);
-                if (leo1a3)
-                {
-                    maple_left.transform.localPosition += new Vector3(-1.15f, 0.628f, 0.08f);
-                    maple_left.transform.localRotation = Quaternion.Euler(new Vector3(3f, 0f, 63f));                    
-                }
-                else
-                {
-                    maple_left.transform.localPosition += new Vector3(-1.135f, 0.6f, -0.15f);
-                    maple_left.transform.localRotation = Quaternion.Euler(new Vector3(0f, 10f, 60f));                    
-                }
-                RendererMaterial maple_left_rm = new RendererMaterial { Renderer = maple_left.GetComponent<MeshRenderer>() };                
-
-                GameObject maple_right = new GameObject("Mapleleaf_right");
-                maple_right.transform.parent = turret.transform;
-                maple_right.transform.position = turret.transform.position;
-                NewQuad(maple_right, cross_mat, maple);
-                maple_right.transform.localScale = new Vector3(0.165f, 0.165f, 0.165f);
-                if (leo1a3) 
-                {
-                    maple_right.transform.localPosition += new Vector3(1.15f, 0.628f, 0.1f);
-                    maple_right.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 62f));                    
-                }
-                else 
-                { 
-                    maple_right.transform.localPosition += new Vector3(1.135f, 0.6f, -0.15f);
-                    maple_right.transform.localRotation = Quaternion.Euler(new Vector3(0f, 170f, 60f));
-                }
-                RendererMaterial maple_right_rm = new RendererMaterial { Renderer = maple_right.GetComponent<MeshRenderer>() };                
-
-                FlammablesManager flamables = vehicle.GetComponent<FlammablesManager>();
-                flamables._scorchRendererMaterials.Add(maple_left_rm);
-                flamables._scorchRendererMaterials.Add(maple_right_rm);
-
-                //Turret numbers: Company [1-4], Troop [1-4], Vic [blank, A B C]
-                PlatoonData platoon = vehicle.Platoon;
-                int position_in_platoon = 0;
-                if (vehicle.Platoon == null) { position_in_platoon = UnityEngine.Random.Range(0, 4); }
-                else
-                {
-                    int platoon_size = vehicle.Platoon.Units.Count;
-                    for (int i = 0; i < platoon_size; i++)
-                    {
-                        if (platoon.Units[i] == vehicle) { position_in_platoon = i; } //0 is first ... 3 is fourth
-                    }
-                }
-                MergedVehicleNumberControl[] components = de_markings.GetComponents<MergedVehicleNumberControl>();
-                MergedVehicleNumberControl turret_numbers = new MergedVehicleNumberControl();
-                foreach (var mvnc in components)
-                {
-                    if (mvnc.Type == VehicleDecalType.UnitNumber) { turret_numbers = mvnc; }
-                }
-                if (turret_numbers._allValues[0] == 9) { turret_numbers._allValues[0] = 1; }
-                else if (turret_numbers._allValues[0] > 4) { turret_numbers._allValues[0] -= 4; } //5-8 get remapped onto 1-4
-                if (turret_numbers._allValues[1] == 9) { turret_numbers._allValues[1] = 1; }
-                else if (turret_numbers._allValues[1] > 4) { turret_numbers._allValues[1] -= 4; } 
-                else if (turret_numbers._allValues[1] == 0) { turret_numbers._allValues[1] = 1; }
-                turret_numbers._allValues[2] = position_in_platoon + 6; // 6-9 in the texture will become letter codes
-                turret_numbers.RefreshDecals();
+                short_name = vehicle_go.name.Substring(0, 4);
+                if (short_name == "LEO2") { Leo2.Convert(vehicle); continue; }
                 
-                GameObject numbers_go;
-                if (leo1a3) { numbers_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/numbers").gameObject; }
-                else { numbers_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/NUMBERS").gameObject; }
-                MeshRenderer numbers = numbers_go.GetComponent<MeshRenderer>();
-                numbers.material.mainTexture = callsigns;
-                //numbers.material.color = new Vector4(1f, 1f, 1f, 1f);
-                //numbers.material.SetFloat("_Metallic", 0.698f);
-                //numbers.material.SetFloat("_Glossiness", 0.346f);
-
-                if (leo1a3) {
-                    numbers_go.transform.localPosition = new Vector3(-0.42f, 0.55f, -1.245f);  //moving turret numbers to back of the turret
-                    numbers_go.transform.localRotation = Quaternion.Euler(270f, 270f, 0f);
-                    numbers_go.transform.localScale = new Vector3(1f, 0.85f, 1f);
-                }
-                else 
-                {
-                    numbers_go.transform.localPosition = new Vector3(1.115f, 0.31f, -1.345f); 
-                    numbers_go.transform.localRotation = numbers_go.transform.localRotation * Quaternion.Euler(0f, 90f, 7f);
-                    numbers_go.transform.localScale = new Vector3(0.48f, 0.48f, 0.4f);
-                }
-                
-                Vector3[] num_vertices = numbers_go.GetComponent<MeshFilter>().sharedMesh.vertices;
-                if (leo1a3) 
-                {
-                    for (int i = 0; i < 12; i++)
-                    {
-                        num_vertices[i] = new Vector3(0f, 0f, 0f);
-                    }
-                    num_vertices[14] += new Vector3(0.13f, 0f, 0f); //changing angle of decal to play nice with the back of the turret
-                    num_vertices[15] += new Vector3(0.13f, 0f, 0f);
-                    num_vertices[18] += new Vector3(0.13f, 0f, 0f);
-                    num_vertices[19] += new Vector3(0.13f, 0f, 0f);
-                    num_vertices[22] += new Vector3(0.13f, 0f, 0f);
-                    num_vertices[23] += new Vector3(0.13f, 0f, 0f);
-                }
-                else 
-                { 
-                    for (int i = 0; i < 21; i++)
-                    {
-                        num_vertices[i] = new Vector3(0f, 0f, 0f); //removing unneeded double image
-                    }  
-                    num_vertices[26] += new Vector3(-0.03f, 0f, 0f); //flattening out the bottom-right corner
-                    num_vertices[28] += new Vector3(-0.03f, 0f, 0f);
-                    num_vertices[29] += new Vector3(-0.03f, 0f, 0f);                    
-                }
-                numbers_go.GetComponent<MeshFilter>().sharedMesh.vertices = num_vertices;
-                
-                GameObject hull_numbers = new GameObject("hull callsign"); //new number decal for the back of the hull
-                hull_numbers.transform.parent = active_hull.transform;
-                hull_numbers.AddComponent<MeshFilter>();
-                hull_numbers.AddComponent<MeshRenderer>();
-                hull_numbers.GetComponent<MeshRenderer>().material = numbers.material;
-                hull_numbers.GetComponent<MeshFilter>().mesh = numbers_go.GetComponent<MeshFilter>().mesh;
-                hull_numbers.transform.position = active_hull.transform.position;
-                if (leo1a3) 
-                {
-                    hull_numbers.transform.localPosition += new Vector3(-0.6f, 4.35f, 1.6f);
-                    hull_numbers.transform.localRotation = Quaternion.Euler(355f, 0f, 270f);
-                    hull_numbers.transform.localScale = new Vector3(1f, 1f, 1f);
-                } 
-                else 
-                {                 
-                    hull_numbers.transform.localPosition += new Vector3(1.88f, 3.12f, -8.9f);
-                    hull_numbers.transform.localRotation = Quaternion.Euler(0f, 89f, -16f);
-                    hull_numbers.transform.localScale = new Vector3(1f, 1f, 1.1f);
-                }
-
-                if (position_in_platoon == 0) //centers decals for troop-leaders
-                {
-                    if (leo1a3) 
-                    {
-                        numbers_go.transform.localPosition += new Vector3(0.105f, 0f, 0f);
-                        hull_numbers.transform.localPosition += new Vector3(0.1f, 0f, 0f);
-                    }
-                    else 
-                    { 
-                        numbers_go.transform.localPosition += new Vector3(0.07f, 0f, 0f);
-                        hull_numbers.transform.localPosition += new Vector3(0.2f, 0f, 0f);
-                    }
-                }
-
-                if (additional_decals.Value) { 
-                    //NATO map symbol type decal, front and back
-                    GameObject hull_tac_front = new GameObject("tactical sign front"); 
-                    hull_tac_front.transform.parent = active_hull.transform;
-                    hull_tac_front.transform.position = active_hull.transform.position;
-                    NewQuad(hull_tac_front, numbers.material, tac);
-                    if (leo1a3)
-                    {
-                        hull_tac_front.transform.localPosition += new Vector3(-0.75f, -1.15f, 1.2f);
-                        hull_tac_front.transform.localRotation = Quaternion.Euler(new Vector3(310f, 0f, 180f));
-                        hull_tac_front.transform.localScale = new Vector3(0.1f, 0.1f, 0.066f);
-                    }
-                    else
-                    {
-                        hull_tac_front.transform.localPosition += new Vector3(-1.45f, 2.4f, 2.25f);
-                        hull_tac_front.transform.localRotation = Quaternion.Euler(new Vector3(330f, 180f, 0f));
-                        hull_tac_front.transform.localScale = new Vector3(0.25f, 0.25f, 0.18f);
-                    }                    
-
-                    GameObject hull_tac_rear = new GameObject("tactical sign rear");
-                    hull_tac_rear.transform.parent = active_hull.transform;                    
-                    hull_tac_rear.transform.position = active_hull.transform.position;
-                    NewQuad(hull_tac_rear, numbers.material, tac);
-                    if (leo1a3)
-                    {
-                        hull_tac_rear.transform.localPosition += new Vector3(-0.88f, 5.418f, 1.4f);
-                        hull_tac_rear.transform.localRotation = Quaternion.Euler(new Vector3(348f, 0f, 0f));
-                        hull_tac_rear.transform.localScale = new Vector3(0.1f, 0.1f, 0.066f);
-                    }
-                    else
-                    {
-                        hull_tac_rear.transform.localPosition += new Vector3(-1.78f, 2.8f, -10.85f);
-                        hull_tac_rear.transform.localRotation = Quaternion.Euler(new Vector3(-100f, 0f, 0f));
-                        hull_tac_rear.transform.localScale = new Vector3(0.2f, 0.2f, 0.14f);
-                    }
-
-                    GameObject mlc_decal = new GameObject("MLC decal");
-                    mlc_decal.transform.parent = active_hull.transform;
-                    mlc_decal.transform.position = active_hull.transform.position;
-                    NewQuad(mlc_decal, numbers.material, mlc);
-                    if (leo1a3)
-                    {
-                        mlc_decal.transform.localPosition += new Vector3(0.84f, -0.62f, 1.48f);
-                        mlc_decal.transform.localRotation = Quaternion.Euler(new Vector3(306f, 0f, 180f));
-                        mlc_decal.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                    }
-                    else
-                    {
-                        mlc_decal.transform.localPosition += new Vector3(1.6f, 3f, 1.15f);
-                        mlc_decal.transform.localRotation = Quaternion.Euler(new Vector3(330f, 180f, 0f));
-                        mlc_decal.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
-                    }                    
-                }
-                Log("Conversions complete on " + vehicle_go.name);
-            }
-                        
-            activeScene = false;
+                short_name = vehicle_go.name.Substring(0, 6);
+                if (short_name == "LEO1A1" || short_name == "LEO1A4") { Leo1A1.Convert(vehicle, american_crew_voice, fn_mag, A1_base, A1_camomask, maple, callsigns, tac, mlc); }
+                if (short_name == "LEO1A3") { Leo1A3.Convert(vehicle, american_crew_voice, marder_crosshair, fn_mag, A3_base, A3_camomask, maple, callsigns, tac, mlc); }
+            }  
             yield break;            
         }
     }    
