@@ -2,7 +2,7 @@
 
 ![A column of C1s ready to march](https://i.imgur.com/UE1ipHA.jpeg)  
   
-This mod overhauls the German Leopard 1 main battle tanks of all the various sub-models to represent Leopard C1s at CFB Lahr under the 4th Canadian Mechanized Brigade Group. This includes replacing the gunner's primary sight with an approximation of the SABCA Cobelda fire control system, adding a laser rangefinder and automatic lead calculation; enforcing the use of the PZB-200 night sight; replacing the MG3 machine-guns with the C6 (FN MAG, known to the Americans as the M240); alternating the suite of ammunition; removing and replacing decals, including troop callsigns on the turrets; and last but not least, replacing German crew voices with English ones.  
+This mod firstly overhauls the German Leopard 1A3 series of main battle tanks to represent Leopard C1s at CFB Lahr under the 4th Canadian Mechanized Brigade Group. This includes replacing the gunner's primary sight with an approximation of the SABCA Cobelda fire control system, adding a laser rangefinder and automatic lead calculation; enforcing the use of the PZB-200 night sight; replacing the MG3 machine-guns with the C6 (FN MAG, known to the Americans as the M240); alternating the suite of ammunition; removing and replacing decals, including troop callsigns on the turrets; and last but not least, replacing German crew voices with English ones. Additionally, the A1A1 Leopards with their cast turrets are used as a basis for representing the post-Cold War Leopard C2, complete with EMES-18 gunner's sight with thermal channel and improved stabilizers. 
 
 Ammunition options are: "historical" per Canadian armour in the 80s (APDS or APFSDS and HESH only, challenging to use!), "American" (M774 APFSDS and M456A2 HEAT only), or "German" for the default German ammunitions (Sabot, HEAT and HESH). When using the Canadian loadout, DM23 is redesignated C76, DM13 becomes C35, and DM512 is L35.  
 
@@ -10,7 +10,7 @@ Cosmetic options allow the player to keep the default German base coat of "Gelbo
 
 As per version 1.2, German-style tactical symbols may be worn, as they appear in some period photos on the bottom left corner of the upper front plate and rear tool box, taking the form of a NATO map symbol for an armoured battalion marked 'X 4' (for the 4th Brgiade) on the right-hand side. Additionally a Military Load Classification number of 46 is sometimes worn on the hull front, available in white outline or plain black. These two additions may be disabled in the config file.  
 
-Per version 1.3.1, the new Leopard 1A4 may be converted (reverted?) into a C1, controlled in the config file (excluded by default).  
+Per version 1.3.1, the new Leopard 1A4 may be converted into a C2, controlled in the config file (excluded by default).  
 
 Version 1.4 adds the option to convert West German M113 APCs and infantry into Canadian assets, toggleable in the config. Toggling "additional decals" with remove the MLC number and NATO map symbols from the APC hull. 1.5 contributes a new model for the C1A1 rifle (FN FAL), and field dressings, which were often tapped onto the webbing at the left shoulder.  
 
@@ -31,7 +31,7 @@ This mod does not copy or incorporate any material wholesale from other modders 
 ***Known Issues***  
 - American voice acting doesn't accurately reflect Canadian armoured crew communication.
 - The stereoscopic rangefinder will still appear in the AAR.
-- The lead calculation depicted does not perfectly match descriptions of the SABCA system.
+- The lead calculation on the C1s depicted does not perfectly match descriptions of the SABCA system.
 - There may be compatibility problems with other mods that modify Leopards.
 
 **Changelog**  
@@ -47,7 +47,8 @@ This mod does not copy or incorporate any material wholesale from other modders 
 1.5.1 - Compatibility patch for GHPC 20260814  
 1.6 - C6 (FN MAG) model to replace M240C  
 1.7 - Updated GPS reticle and auto-lead behaviour  
-1.7.1 - Added configuration options to omit certain Leopard variants from conversion  
+1.7.1 - Added configuration options to omit certain Leopard variants from conversion
+1.8 - Compatibility patch for GHPC 20261014, and Leopard C2s added
  
 ![Infantry on the move](https://i.imgur.com/XB1gVrA.jpeg)  
 ![Viewing a T-55 through the gunner's sight at point-blank range!](https://i.imgur.com/YEoP9Xf.jpeg)  
