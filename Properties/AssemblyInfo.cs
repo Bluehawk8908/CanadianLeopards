@@ -3,14 +3,14 @@ using System.Runtime.InteropServices;
 using MelonLoader;
 using CanadianLeopards;
 
-[assembly: MelonInfo(typeof(CanadianLeopardsClass), "CanadianLeopards", "1.7.1", "Bluehawk, Agentgummby")]
+[assembly: MelonInfo(typeof(CanadianLeopardsClass), "CanadianLeopards", "1.8.0", "Bluehawk, Agentgummby")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("CanadianLeopards")]
-[assembly: AssemblyDescription("A mod for GHPC that converts Bundeswehr Leopard 1s into Canadian C1s")]
+[assembly: AssemblyDescription("A mod for GHPC that converts Bundeswehr ground forces into Canadians")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Bluehawk & Agentgummby")]
 [assembly: AssemblyProduct("CanadianLeopards")]
