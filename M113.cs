@@ -119,7 +119,7 @@ namespace CanadianLeopards
 
             GameObject maple_left = new GameObject("maple_left");
             maple_left.transform.parent = vehicle_go.transform;            
-            CanadianLeopardsClass.NewQuad(maple_left, cross, mapleAPC);
+            Utilities.NewQuad(maple_left, cross, mapleAPC);
             maple_left.transform.localPosition = new Vector3(-1.29f, 1.745f, 1.5f);
             maple_left.transform.localRotation = Quaternion.Euler(new Vector3(0f, 0f, 90f));
             maple_left.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
@@ -129,7 +129,7 @@ namespace CanadianLeopards
 
             GameObject maple_right = new GameObject("maple_right");
             maple_right.transform.parent = vehicle_go.transform;
-            CanadianLeopardsClass.NewQuad(maple_right, cross, mapleAPC);
+            Utilities.NewQuad(maple_right, cross, mapleAPC);
             maple_right.transform.localPosition = new Vector3(1.29f, 1.745f, 1.5f);
             maple_right.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 90f));
             maple_right.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
@@ -140,7 +140,7 @@ namespace CanadianLeopards
             GameObject flag_front = new GameObject("flag_front");
             flag_front.transform.parent = vehicle_go.transform;
             cross.SetFloat("_Cutoff", 0.5f);
-            CanadianLeopardsClass.NewQuad(flag_front, cross, flag);
+            Utilities.NewQuad(flag_front, cross, flag);
             flag_front.transform.localPosition = new Vector3(1.075f, 1.5f, 2.21f);
             flag_front.transform.localRotation = Quaternion.Euler(new Vector3(315f, 180f, 0f));
             flag_front.transform.localScale = new Vector3(0.08f, 1f, 0.045f);
@@ -150,7 +150,7 @@ namespace CanadianLeopards
 
             GameObject flag_rear = new GameObject("flag_rear");
             flag_rear.transform.parent = vehicle_go.transform;
-            CanadianLeopardsClass.NewQuad(flag_rear, cross, flag);
+            Utilities.NewQuad(flag_rear, cross, flag);
             flag_rear.transform.localPosition = new Vector3(-1.05f, 1.5f, -1.91f);
             flag_rear.transform.localRotation = Quaternion.Euler(new Vector3(280f, 180f, 180f));
             flag_rear.transform.localScale = new Vector3(0.08f, 1f, 0.045f);
@@ -162,7 +162,7 @@ namespace CanadianLeopards
                 cross.SetFloat("_Cutoff", 0.2f);
                 GameObject tac_front = new GameObject("tac_front");
                 tac_front.transform.parent = vehicle_go.transform;
-                CanadianLeopardsClass.NewQuad(tac_front, cross, tacAPC);
+                Utilities.NewQuad(tac_front, cross, tacAPC);
                 tac_front.transform.localPosition = new Vector3(-1.06f, 1.2f, 2.51f);
                 tac_front.transform.localRotation = Quaternion.Euler(new Vector3(315f, 180f, 0f));
                 tac_front.transform.localScale = new Vector3(0.1f, 1f, 0.07f);
@@ -173,7 +173,7 @@ namespace CanadianLeopards
 
                 GameObject tac_rear = new GameObject("tac_rear");
                 tac_rear.transform.parent = vehicle_go.transform;
-                CanadianLeopardsClass.NewQuad(tac_rear, cross, tacAPC);
+                Utilities.NewQuad(tac_rear, cross, tacAPC);
                 tac_rear.transform.localPosition = new Vector3(1.045f, 1.5f, -1.91f);
                 tac_rear.transform.localRotation = Quaternion.Euler(new Vector3(280f, 180f, 180f));
                 tac_rear.transform.localScale = new Vector3(0.1f, 1f, 0.07f);
@@ -183,7 +183,7 @@ namespace CanadianLeopards
 
                 GameObject mlc = new GameObject("mlc");
                 mlc.transform.parent = vehicle_go.transform;
-                CanadianLeopardsClass.NewQuad(mlc, numbers.material, mlcAPC);
+                Utilities.NewQuad(mlc, numbers.material, mlcAPC);
                 mlc.transform.localPosition = new Vector3(1.075f, 1.315f, 2.4f);
                 mlc.transform.localRotation = Quaternion.Euler(new Vector3(315f, 180f, 0f));
                 mlc.transform.localScale = new Vector3(0.08f, 1f, 0.08f);
