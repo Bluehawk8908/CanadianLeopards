@@ -293,7 +293,7 @@ namespace CanadianLeopards
 
             //VEHICLES
             Vehicle[] list = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
-            MelonLogger.Msg("vehicles: " + list.Length);
+            
             foreach (var vehicle in list)
             {
                 GameObject vehicle_go = vehicle.gameObject;
