@@ -7,7 +7,6 @@ using MelonLoader.Utils;
 using GHPC;
 using GHPC.State;
 using GHPC.Mission;
-using GHPC.Player;
 using GHPC.Vehicle;
 using GHPC.Weapons;
 using Reticle;
@@ -21,6 +20,37 @@ namespace CanadianLeopards
         void Awake()
         {
             enabled = false;
+        }
+    }
+
+    public class GrafenGizmo : MonoBehaviour
+    {
+        static bool done;
+        static bool spawned;
+        public GameObject american_crew_voice;
+        public ReticleMesh.CachedReticle marder_crosshair;
+        public GameObject fn_mag;
+        public Texture2D A3_base;
+        public Texture2D A3_camomask;
+        public Texture2D maple;
+        public Texture2D callsigns;
+        public Texture2D tac;
+        public Texture2D mlc;
+        
+        void LateUpdate()
+        {
+            if (done) return;
+            if (!spawned) { CanadianLeopardsClass.ShowcaseExtras(); spawned = true; }  
+            if (GHPC.World.SceneUnitsManager.Instance.AllUnitsInScene.Count == 40) {
+                Vehicle[] newList = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);                
+                foreach (var vehicle in newList)
+                {
+                    if (vehicle.gameObject.GetComponent<CanLepConverted>() != null) { continue; }
+                    if (vehicle.UniqueName == "LEO1A3A3" || vehicle.UniqueName == "LEO1A3")
+                    { Leo1A3.Convert(vehicle, american_crew_voice, marder_crosshair, fn_mag, A3_base, A3_camomask, maple, callsigns, tac, mlc); }
+                }
+                done = true;
+            }
         }
     }
     public class CanadianLeopardsClass : MelonMod
@@ -44,6 +74,7 @@ namespace CanadianLeopards
         public static AmmoFeed cal50 = null;        
         public static ReticleMesh.CachedReticle marder_crosshair;
         public static GameObject emes15;
+        public static bool graf;
         
         public override void OnInitializeMelon()
         {
@@ -87,41 +118,46 @@ namespace CanadianLeopards
             mute_logger = cfg.CreateEntry<bool>("Mute log messages", false);
             mute_logger.Comment = "Mutes log messages in the MelonLoader console.";
             Utilities.mute_logger = mute_logger.Value;
-        }   
-
-        void ShowcaseExtras()
+        }
+        
+        public static void ShowcaseExtras()
         {
             var prefabLookups = UnitSpawner.Instance.PrefabLookup;
             AssetReference prefab1A3 = prefabLookups.GetPrefab("LEO1A3");
-            AssetReference prefab1A3A3 = prefabLookups.GetPrefab("LEO1A3A3");
+            AssetReference prefab1A3A3 = prefabLookups.GetPrefab("LEO1A3A3");            
             GameObject Leo1A3 = Addressables.LoadAssetAsync<GameObject>(prefab1A3).WaitForCompletion();
             GameObject Leo1A3A3 = Addressables.LoadAssetAsync<GameObject>(prefab1A3A3).WaitForCompletion();
-            Leo1A3.GetComponent<Vehicle>().Allegiance = Faction.Neutral;
-            Leo1A3A3.GetComponent<Vehicle>().Allegiance = Faction.Neutral;            
-            GameObject.Instantiate(Leo1A3, new Vector3(1423.7f, 26.416f, 1433.9f), Quaternion.Euler(0.573f, 233.87f, 358.75f));            
-            GameObject.Instantiate(Leo1A3A3, new Vector3(1399.87f, 25.7f, 1436.75f), Quaternion.Euler(0.925f, 230.98f, 358.284f));                
+
+            UnitSpawner.Instance.SpawnUnit(Leo1A3, new GHPC.Mission.Data.UnitMetaData() 
+                { Allegiance = Faction.Neutral, 
+                  Position = new Vector3(1423.7f, 26.416f, 1433.9f), 
+                  Rotation = Quaternion.Euler(0.573f, 233.87f, 358.75f)});
+            UnitSpawner.Instance.SpawnUnit(Leo1A3A3, new GHPC.Mission.Data.UnitMetaData()
+                { Allegiance = Faction.Neutral, 
+                  Position = new Vector3(1399.87f, 25.7f, 1436.75f), 
+                  Rotation = Quaternion.Euler(0.925f, 230.98f, 358.284f) });
+            
             Utilities.Log("Spawned additional vehicles on the range.");
         }
-
-        
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
             if (sceneName == "MainMenu2_Scene" || sceneName == "t64_menu" || sceneName == "MainMenu2-1_Scene" || sceneName == "leo2_menu") 
             {
+                graf = false;
                 return;               
             }
 
             gameManager = GameObject.Find("_APP_GHPC_");
             if (gameManager == null) { return; }
-            if (sceneName == "TR01_showcase" && showcase_extras.Value) { ShowcaseExtras(); }
 
-            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Conversion), GameStatePriority.Medium);
+            if (sceneName == "TR01_showcase" && showcase_extras.Value) { graf = true; }
+            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Conversion), GameStatePriority.Medium);            
         }
 
         public IEnumerator Conversion(GameState _)
         {
-            if (showcase_extras.Value && !PlayerInput.Instance.IsMapActive) PlayerInput.Instance.SetPlayerUnit(PlayerInput.Instance.CurrentPlayerUnit); //resets camera  
+            //if (showcase_extras.Value && !PlayerInput.Instance.IsMapActive) PlayerInput.Instance.SetPlayerUnit(PlayerInput.Instance.CurrentPlayerUnit); //resets camera            
 
             //PREFABS
             if (american_crew_voice == null || cal50 == null)
@@ -257,7 +293,7 @@ namespace CanadianLeopards
 
             //VEHICLES
             Vehicle[] list = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
-            
+            MelonLogger.Msg("vehicles: " + list.Length);
             foreach (var vehicle in list)
             {
                 GameObject vehicle_go = vehicle.gameObject;
@@ -284,8 +320,23 @@ namespace CanadianLeopards
                 short_name = vehicle_go.name.Substring(0, 6);
                 if (short_name == "LEO1A1") { Leo1A1.Convert(vehicle, american_crew_voice, fn_mag, A1_base, A1_camomask, maple, callsigns, tac, mlc); }
                 if (short_name == "LEO1A3" || short_name == "LEO1A4") { Leo1A3.Convert(vehicle, american_crew_voice, marder_crosshair, fn_mag, A3_base, A3_camomask, maple, callsigns, tac, mlc); }
-            }  
-            yield break;            
+            }
+
+            if (graf) { 
+                GameObject gizmo = new GameObject("gizmo");
+                GrafenGizmo graf = gizmo.AddComponent<GrafenGizmo>();
+                graf.american_crew_voice = american_crew_voice;
+                graf.marder_crosshair = marder_crosshair;
+                graf.fn_mag = fn_mag;
+                graf.A3_base = A3_base;
+                graf.A3_camomask = A3_camomask;
+                graf.maple = maple;
+                graf.callsigns = callsigns;
+                graf.tac = tac;
+                graf.mlc = mlc;
+                GameObject.Instantiate(gizmo);
+            }
+            yield break;
         }
     }    
 }
