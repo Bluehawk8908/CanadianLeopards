@@ -11,6 +11,7 @@ Cosmetic options allow the player to keep the default German base coat of "Gelbo
 Version 1.4 adds the option to convert West German M113 APCs and infantry into Canadian assets, toggleable in the config. Toggling "additional decals" with remove the MLC number and NATO map symbols from the APC hull. 1.5 contributes a new model for the C1A1 rifle (FN FAL), and field dressings, which were often tapped onto the webbing at the left shoulder.
 
 The Cobelda sight has two magnification levels and when you apply lead, the camera will seem to jump ahead to where the gun is aiming, while the graticule lags behind to remain on the moving target. When you fire then, the tracer will seem to precede the target and curve into it as you pan across. The lead will not update in real time however, so if the target changes direction or speed, you will need to dump lead, track and laze again to re-aquire the firing solution.   
+
 The EMES-18 sight is nearly identical in appearance and function as the EMES-15 seen on the Leopard 2 family. It has a very narrow field of view with a single magnification in the day channel, while the thermal channel has a WFOV for scanning and NFOV for fine aiming. Dynamic lead allows you to maintain a track on a moving target of changing speed or direction and fire confidently. However be aware, if the distance to the target is changing quickly, you may will need to dump and relaze. Like the Leo 1a4 or Leo2, the C2's EMES-18 requires you to press and hold the laze button (E by default) or the dedicated lead button (capslock by default) in addition to the palm switches (right mouse by default). Readiness to fire, range, and ammunition index is displayed along the top of the sight instead of at the bottom.
 
 ***Installation***  
@@ -28,10 +29,9 @@ Modified M240 model by Bluehawk, based on original GHPC asset by Harry for Radia
 This mod does not copy or incorporate any material wholesale from other modders not named above, but greatly utilized the availability of the source code written by [ATLAS](https://github.com/thebeninator), [RoyZ](https://github.com/RoyZ-iwnl) and [Andrix](https://github.com/Andrix44/) as learning tools. Their contributions to the GHPC modding scene are enormous, as are utilities like [UnityExplorer](https://github.com/sinai-dev/UnityExplorer).
 
 ***Known Issues***  
-- American voice acting doesn't accurately reflect Canadian armoured crew communication.
-- The stereoscopic rangefinder will still appear in the AAR.
-- The lead calculation on the C1s depicted does not perfectly match descriptions of the SABCA system.
-- There may be compatibility problems with other mods that modify Leopards.
+- American voice acting doesn't accurately reflect Canadian armoured crew communication.  
+- The stereoscopic rangefinder will still appear in the AAR.  
+- There may be compatibility problems with other mods that modify Leopards.  
 
 **Changelog**  
 1.0 - Base release  
