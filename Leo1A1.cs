@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 using GHPC;
 using GHPC.Vehicle;
 using GHPC.Weapons;
@@ -12,14 +13,32 @@ using GHPC.Utility;
 
 namespace CanadianLeopards
 {
-    public class Leo1A3
+
+    public class EMESIndexer : MonoBehaviour
     {
-        public static void Convert(Vehicle vehicle, GameObject american_crew_voice, ReticleMesh.CachedReticle crosshair, GameObject fn_mag, 
-                Texture2D A3_base, Texture2D A3_camomask, Texture2D maple, Texture2D callsigns, Texture2D tac, Texture2D mlc)
+        public WeaponSystem MainGun;
+        public WeaponSystem Coax;
+        public FireControlSystem FCS;
+        public GameObject KE;
+        public GameObject MZ;
+        public GameObject COAX;
+        void LateUpdate()
+        {
+            if (FCS.CurrentWeaponSystem == MainGun) { 
+                if (FCS.CurrentAmmoType.Category == AmmoType.AmmoCategory.Penetrator) { KE.SetActive(true); MZ.SetActive(false); COAX.SetActive(false); }
+                else { KE.SetActive(false); MZ.SetActive(true); COAX.SetActive(false); }
+            }
+            if (FCS.CurrentWeaponSystem == Coax) { KE.SetActive(false); MZ.SetActive(false); COAX.SetActive(true); }
+        }
+    }
+    public class Leo1A1
+    {
+        public static void Convert(Vehicle vehicle, GameObject american_crew_voice, GameObject fn_mag, 
+                Texture2D A1_base, Texture2D A1_camomask, Texture2D maple, Texture2D callsigns, Texture2D tac, Texture2D mlc)
         {
             GameObject vehicle_go = vehicle.gameObject;
             vehicle_go.AddComponent<CanLepConverted>();
-            vehicle._friendlyName = "Leopard C1";  //New display name
+            vehicle._friendlyName = "Leopard C2";  //New display name
 
             vehicle.transform.Find("DE Tank Voice").gameObject.SetActive(false); //Adding US Voices
             GameObject new_voice = GameObject.Instantiate(american_crew_voice, vehicle.transform);
@@ -34,22 +53,31 @@ namespace CanadianLeopards
             WeaponSystemInfo coax = vehicle.GetComponent<WeaponsManager>().Weapons[1];
             FireControlSystem fcs = vehicle.GetComponentInChildren<FireControlSystem>();
 
-            //Adding Laser-Range Finder and Lead-Calculator
-            GameObject lrf_holder = new GameObject("Laser Rangefinder");
+            //Importing the EMES-15 sight from the Leo2 and jury-rigging it into a EMES-18
+            GameObject new_optic = GameObject.Instantiate(CanadianLeopardsClass.emes15, vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/"));
+            Object.Destroy(new_optic.GetComponent<FireControlSystem>());
+            Object.Destroy(new_optic.transform.Find("Optic").gameObject);
+            new_optic.name = "EMES-18";
+            GameObject emes15_canvas = new_optic.transform.Find("EMES-15 canvas").gameObject;            
+            GameObject lrf_holder = new GameObject("Laser Rangefinder");            
             lrf_holder.transform.SetParent(vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS"));
-            lrf_holder.transform.localPosition = new Vector3(0f, 0f, 0.5f);
+            lrf_holder.transform.localPosition = new Vector3(0f, 0f, 0.2f);
             lrf_holder.transform.localRotation = Quaternion.identity;
             GHPC.Equipment.DestructibleComponent laser_dest = lrf_holder.AddComponent<GHPC.Equipment.DestructibleComponent>();
-            laser_dest._health = 5f;
-            laser_dest._fullHealth = 5f;
-            laser_dest._pressureTolerance = 1f;
-            laser_dest._name = "Laser Rangefinder";
+            laser_dest._name = "Laser rangefinder";
+            laser_dest._damageThreshold = 1f;
+            laser_dest._health = 2f;
+            laser_dest._fullHealth = 2f;
+            laser_dest._pressureTolerance = 1f;            
+            laser_dest.ComponentCollision = lrf_holder.GetComponent<MeshCollider>();
+            laser_dest.Unit = vehicle;
+            //laser_dest.Destroyed += fcs.LaserDestroyed;
 
             fcs.LaserAim = LaserAimMode.ImpactPoint;
             fcs.LaserComponent = laser_dest;
             fcs.LaserOrigin = lrf_holder.transform;
             fcs.MaxLaserRange = 4000f;
-            //fcs.DynamicLead = true;
+            fcs.DynamicLead = true;
             fcs.SuperleadWeapon = true;
             fcs.SuperelevateWeapon = true;
             fcs.TraverseBufferSeconds = 0.5f;
@@ -57,91 +85,89 @@ namespace CanadianLeopards
             fcs._originalSuperleadMode = true;
             fcs.ComputerNeedsPower = true;
             fcs.RecordTraverseRateBuffer = true;
-            fcs._useSeparateLead = false;
-            UsableOptic sabca = fcs.MainOptic;
-            sabca.ForceHorizontalReticleAlign = true;
-            sabca.RotateAzimuth = false;
+            fcs._useSeparateLead = true;
+            fcs._originalRangeLimits = new Vector2(400f, 9990f);
+            UsableOptic dayOptic = fcs.MainOptic;
+            dayOptic.ForceHorizontalReticleAlign = true;
+            dayOptic.RotateAzimuth = true;
+            dayOptic.LocalElevationLimits = new Vector2(-15f, 25f);
+            dayOptic.RangeText = emes15_canvas.transform.Find("-- range readout").GetComponent<TextMeshProUGUI>();
+            dayOptic.RangeTextDivideBy = 10;
+            dayOptic.RangeTextArchetype = "000";
+            dayOptic.ReadyToFireObject = emes15_canvas.transform.Find("-- ready to fire").gameObject;
+            dayOptic.UnreadyToFireObject = emes15_canvas.transform.Find("-- unready to fire").gameObject;
             UnityEngine.Object.Destroy(fcs.OpticalRangefinder);
-            CameraSlot sabca_cam = sabca.slot;
+            CameraSlot dayCam = dayOptic.slot;
+            dayCam.ExclusiveItems = new GameObject[] { emes15_canvas };
+            dayCam.DefaultFov = 2.5f;
+            dayCam.VibrationBlurScale = 0f;
+            dayCam.VibrationShakeMultiplier = 0.1f;
+            dayCam.HitZone = laser_dest;
+            
+            CameraSlot nightCam = new_optic.transform.Find("FLIR").GetComponent<CameraSlot>();
+            UsableOptic nightOptic = new_optic.transform.Find("FLIR").GetComponent<UsableOptic>();
+            nightOptic.Alignment = OpticAlignment.BoresightStabilized;
+            nightOptic.ReticleActive = true;
+            nightOptic.StabsActive = true;
+            nightOptic.LevelTransform = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--");
+            nightOptic.FCS = fcs;
+            nightCam.LinkedDaySight = dayCam;
+            dayCam.LinkedNightSight = nightCam;
+            nightCam.transform.position = dayCam.transform.position;
+            nightCam.transform.localPosition = new Vector3(-0.8f, -2f, 0f);
 
-            //Ensuring PZB-200 Night Sight
-            if (fcs.NightOptic == null || fcs.NightOptic.name == "PERI-R12")
-            {
-                GameObject pzb_go;
-                GameObject aux_go;
-                pzb_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/1A3 mantlet/--Gun Scripts--/PZB-200").gameObject;
-                aux_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/1A3 mantlet/--Gun Scripts--/Aux sight TZF1A").gameObject;                
-                pzb_go.SetActive(true);
-                UsableOptic pzb = pzb_go.GetComponent<UsableOptic>();
-                pzb.ReticleActive = true;
-                pzb.StabsActive = true;
-                CameraSlot pzb_cam = pzb_go.GetComponent<CameraSlot>();
-                CameraSlot aux_cam = aux_go.GetComponent<CameraSlot>();
-                pzb_cam.LinkedDaySight = sabca_cam;
-                sabca_cam.LinkedNightSight = pzb_cam;
-                aux_cam.LinkedNightSight = pzb_cam;
-                pzb_cam._pairedOptic = pzb;
-                pzb_cam.IsLinkedNightSight = true;
-                pzb_cam._isUsableByWeapon = true;
-                fcs.NightOptic = pzb;
+            GameObject blackPanel = emes15_canvas.transform.Find("Panel").gameObject; blackPanel.transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 327f);
+            dayOptic.ReadyToFireObject.transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(-64.47f, 239f);
+            dayOptic.UnreadyToFireObject.transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(-64.47f, 239f);
+            GameObject rangeDisplay = emes15_canvas.transform.Find("-- range readout").gameObject; rangeDisplay.GetComponent<RectTransform>().anchoredPosition = new Vector2(-10f, 540f);
+            GameObject symbolKE = emes15_canvas.transform.Find("-- KE").gameObject; symbolKE.transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(80f, 239f);
+            GameObject symbolMZ = emes15_canvas.transform.Find("-- MZ").gameObject; symbolMZ.transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(80f, 239f);
+            GameObject symbolCOAX = emes15_canvas.transform.Find("-- COAX").gameObject; symbolCOAX.transform.GetComponent<RectTransform>().anchoredPosition = new Vector2(80f, 239f);
+            dayOptic.ReadyToFireObject.transform.GetComponent<RectTransform>().localScale = new Vector3(0.8f, 0.8f, 0.8f);
+            dayOptic.UnreadyToFireObject.transform.GetComponent<RectTransform>().localScale = new Vector3(0.8f, 0.8f, 0.8f);
+            rangeDisplay.GetComponent<RectTransform>().localScale = new Vector3(0.8f, 0.8f, 0.8f);
+            symbolKE.GetComponent<RectTransform>().localScale = new Vector3(0.8f, 0.8f, 0.8f);
+            symbolMZ.GetComponent<RectTransform>().localScale = new Vector3(0.8f, 0.8f, 0.8f);
+            symbolCOAX.GetComponent<RectTransform>().localScale = new Vector3(0.8f, 0.8f, 0.8f);
 
-                vehicle.transform.Find("LEO1A3_mesh/1A3_PZB200").gameObject.SetActive(true);
-                vehicle.transform.Find("LEO1A3_mesh/PERI R12").gameObject.SetActive(false);                
-            }
-            sabca_cam.NightSightAtNightOnly = false;
+            EMESIndexer indexer = fcs.gameObject.AddComponent<EMESIndexer>();
+            indexer.FCS = fcs;
+            indexer.MainGun = maingun;
+            indexer.Coax = coax.Weapon;
+            indexer.KE = symbolKE;
+            indexer.MZ = symbolMZ;
+            indexer.COAX = symbolCOAX;
 
-            //Changing the reticle in the primary sight
-            GameObject reticle_mesh_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS/Reticle Mesh").gameObject;
-            ReticleMesh reticle_mesh = reticle_mesh_go.GetComponent<ReticleMesh>();
-            reticle_mesh.reticleSO = crosshair.tree;
-            reticle_mesh.reticle = crosshair;
-            reticle_mesh.SMR = null;
-            reticle_mesh.Load();
+            //Disabling PZB-200 and spotlight            
+            vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/Mantlet/searchlight closed").gameObject.SetActive(false);
+            vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/Mantlet/searchlight open").gameObject.SetActive(false);
+            vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/searchlight cord").gameObject.SetActive(false);
+            vehicle.transform.Find("LEO1A1_mesh/PZB 200").gameObject.SetActive(false);
+            GHPC.Equipment.Lamps.LampInfo[] tempArray = new GHPC.Equipment.Lamps.LampInfo[3];
+            tempArray[0] = vehicle.GetComponent<GHPC.Equipment.EquipmentManager>().AllLamps[0];
+            tempArray[1] = vehicle.GetComponent<GHPC.Equipment.EquipmentManager>().AllLamps[1];
+            tempArray[2] = vehicle.GetComponent<GHPC.Equipment.EquipmentManager>().AllLamps[2];
+            vehicle.GetComponent<GHPC.Equipment.EquipmentManager>().AllLamps = tempArray;
+            vehicle.GetComponent<GHPC.Equipment.EquipmentManager>().lampsDict.Remove(GHPC.Equipment.Lamps.LampType.GunnerSpotlight);
+            vehicle._nightVisionType = NightVisionType.Thermal;
+            vehicle._targetSpotterSettings._bestNightVision = GHPC.AI.TargetSpotterSettings.NightVisionQuality.Gen1Thermal;            
+            dayCam.NightSightAtNightOnly = false;
 
-            RT_FocalPlane plane = reticle_mesh_go.transform.Find("FFP").GetComponent<RT_FocalPlane>();
-            ReticleTree.Angular ang = (ReticleTree.Angular)plane.fp.elements[0];
-            if (ang.align != ReticleTree.GroupBase.Alignment.Impact)
-            {
-                ang.align = ReticleTree.GroupBase.Alignment.Impact;
-                ReticleTree.Angular aiming_cross = (ReticleTree.Angular)ang.elements[3];
-                aiming_cross.align = ReticleTree.GroupBase.Alignment.None;
-
-                ReticleTree.Line upper_line = new ReticleTree.Line(position: new Vector2(0f, 18f), degrees: 90f, length: 2f, thickness: 0.2f);
-                ReticleTree.Line lower_line = new ReticleTree.Line(position: new Vector2(0f, -18f), degrees: 90f, length: 2f, thickness: 0.2f);
-                ReticleTree.Line left_line = new ReticleTree.Line(position: new Vector2(18f, 0f), degrees: 0f, length: 2.5f, thickness: 0.2f);
-                ReticleTree.Line right_line = new ReticleTree.Line(position: new Vector2(-18f, 0f), degrees: 0f, length: 2.5f, thickness: 0.2f);
-                ReticleTree.Circle mysterious_dot = new ReticleTree.Circle(position: new Vector2(0f, 0f), degrees: 0f, radius: 0.5236f, thickness: 0.12f);
-                upper_line.illumination = ReticleTree.Light.Type.NightIllumination;
-                lower_line.illumination = ReticleTree.Light.Type.NightIllumination;
-                left_line.illumination = ReticleTree.Light.Type.NightIllumination;
-                right_line.illumination = ReticleTree.Light.Type.NightIllumination;
-                mysterious_dot.illumination = ReticleTree.Light.Type.NightIllumination;
-
-                plane.fp.elements.Add(new ReticleTree.Angular(position: new ReticleTree.Position(-12f, 12f), parent: null, align: ReticleTree.GroupBase.Alignment.Boresight)); //dot
-                ReticleTree.Angular original_ret = (ReticleTree.Angular)plane.fp.elements[0];
-                ReticleTree.Angular new_ang = (ReticleTree.Angular)plane.fp.elements[1];
-
-                original_ret.elements.Add(upper_line); original_ret.elements.Add(lower_line);
-                original_ret.elements.Add(left_line); original_ret.elements.Add(right_line);
-                new_ang.elements = new System.Collections.Generic.List<ReticleTree.TransformElement> { mysterious_dot };
+            //Augmenting the reticle in the primary sight
+            ReticleMesh reticle_mesh = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS/Reticle Mesh").GetComponent<ReticleMesh>();
+            reticle_mesh.reticleSO.lights[0].color = new Reticle.RGB(4f, 0f, 0f, true);
+            ReticleTree.Angular design = reticle_mesh.reticleSO.planes[0].elements[0] as ReticleTree.Angular;
+            if (design.elements.Count == 14) {
+                ReticleTree.Circle circle = new ReticleTree.Circle(position: new Vector2(0f, 0f), degrees: 0f, radius: 0.25f, thickness: 0.05f, iterations: 12);
+                circle.illumination = ReticleTree.Light.Type.Powered;
+                circle.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+                design.elements.Add(circle);            
                 reticle_mesh.Clear(false);
                 reticle_mesh.SMR = null;
                 reticle_mesh.GenerateMesh();
                 reticle_mesh.Load();
             }
 
-            ReticleTree.Light new_light = new ReticleTree.Light
-            {
-                color = new RGB(3f, 2f, 0, true),
-                type = ReticleTree.Light.Type.Powered
-            };
-            reticle_mesh.lights[0].light = new_light;
-            reticle_mesh.lightCols[1] = new Vector4(3f, 2f, 0f, 1f);
-            sabca_cam.DefaultFov = 9.52f;
-            sabca_cam.OtherFovs = new float[] { 3f };
-            sabca_cam.AllowFreeZoom = true;
-            sabca_cam.ZoomInAudioEvent = "event:/Effects/Optic/Optic_Zoom_In";
-            sabca_cam.ZoomOutAudioEvent = "event:/Effects/Optic/Optic_Zoom_Out";
             GameObject old_scale = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/" +
                 "Sights/GPS/E-Scale").gameObject;
             old_scale.transform.Find("e-scale").gameObject.SetActive(false);
@@ -163,11 +189,11 @@ namespace CanadianLeopards
             coax.Weapon.WeaponSound.LoopEventPath = "event:/Weapons/MG_m240_750rmp";
 
             //Replacing loader-hatch MG
-            Transform loader_station = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/lafette002");
+            Transform loader_station = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/lafette001");
             GameObject fnMag = GameObject.Instantiate(fn_mag, loader_station);
             fnMag.transform.localRotation = Quaternion.Euler(new Vector3(0f, 0f, 180f));
             fnMag.transform.localPosition = new Vector3(0f, 0.05f, -0.08f);
-            loader_station.transform.Find("MG004").gameObject.SetActive(false);                     
+            loader_station.transform.Find("MG3").gameObject.SetActive(false);
 
             //Configuring Ammunition
             string ammo_loadout = CanadianLeopardsClass.ammo_loadout.Value;
@@ -182,7 +208,7 @@ namespace CanadianLeopards
 
             //Texture cosmetics
             GameObject de_markings;
-            de_markings = vehicle.transform.Find("LEO1A3_markings").gameObject;           
+            de_markings = vehicle.transform.Find("LEO1A1_markings").gameObject;
             de_markings.SetActive(false);
             GameObject cross = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/kreuz").gameObject;
             Material cross_mat = cross.GetComponent<MeshRenderer>().material;
@@ -190,20 +216,47 @@ namespace CanadianLeopards
 
             GameObject active_hull;
             MeshRenderer base_mr;
-            active_hull = vehicle.transform.Find("LEO1A3_mesh/1A3_hull").gameObject;            
+            
+            GameObject hull_early = vehicle.transform.Find("LEO1A1_mesh/hull_early").gameObject;
+            GameObject hull_mid = vehicle.transform.Find("LEO1A1_mesh/hull_mid").gameObject;
+            GameObject hull_late = vehicle.transform.Find("LEO1A1_mesh/hull_late").gameObject;
+            if (hull_early.activeSelf == true)
+            {
+                active_hull = hull_early;
+            }
+            else if (hull_mid.activeSelf == true)
+            {
+                active_hull = hull_mid;
+            }
+            else
+            {
+                active_hull = hull_late;
+            }
+            
             base_mr = active_hull.GetComponent<MeshRenderer>();
-            base_mr.material.SetTexture("_Albedo", A3_base);             
-            base_mr.material.SetTexture("_PaintMask", A3_camomask);            
+            base_mr.material.SetTexture("_Albedo", A1_base);
+            base_mr.material.SetTexture("_PaintMask", A1_camomask);
             if (CanadianLeopardsClass.no_threecolour.Value) base_mr.material.SetFloat("_CamoAmount", 0f);
-
-            GameObject a3_turret = vehicle.transform.Find("LEO1A3_mesh/A3 turret").gameObject;
-            GameObject a3_skirt_cut = vehicle.transform.Find("LEO1A3_mesh/a3_skirt_cut").gameObject;
-            GameObject a3_skirt_full = vehicle.transform.Find("LEO1A3_mesh/a3_skirt_full").gameObject;
-            GameObject a3_wheels = vehicle.transform.Find("LEO1A3_mesh/running gear").gameObject;
-            a3_turret.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;
-            a3_skirt_cut.GetComponent<MeshRenderer>().material = base_mr.material;
-            a3_skirt_full.GetComponent<MeshRenderer>().material = base_mr.material;
-            a3_wheels.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;
+            
+            GameObject turret_early = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/turret_early").gameObject;
+            GameObject turret_late = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/turret_late").gameObject;
+            GameObject gun_barrel = vehicle.transform.Find("LEO1A1_mesh/gun").gameObject;
+            GameObject side_skirts = vehicle.transform.Find("LEO1A1_mesh/side skirts").gameObject;
+            GameObject skirt_full = vehicle.transform.Find("LEO1A1_mesh/skirt_full").gameObject;
+            GameObject skirts_cut0 = vehicle.transform.Find("LEO1A1_mesh/skirts_cut0").gameObject;
+            GameObject skirts_cut1 = vehicle.transform.Find("LEO1A1_mesh/skirts_cut1").gameObject;
+            GameObject skirts_cut2 = vehicle.transform.Find("LEO1A1_mesh/skirts_cut2").gameObject;
+            GameObject wheels = vehicle.transform.Find("LEO1A1_mesh/running gear").gameObject;
+            turret_early.GetComponent<MeshRenderer>().material = base_mr.material;
+            turret_late.GetComponent<MeshRenderer>().material = base_mr.material;
+            gun_barrel.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;
+            side_skirts.GetComponent<MeshRenderer>().material = base_mr.material;
+            skirt_full.GetComponent<MeshRenderer>().material = base_mr.material;
+            skirts_cut0.GetComponent<MeshRenderer>().material = base_mr.material;
+            skirts_cut1.GetComponent<MeshRenderer>().material = base_mr.material;
+            skirts_cut2.GetComponent<MeshRenderer>().material = base_mr.material;
+            wheels.GetComponent<SkinnedMeshRenderer>().material = base_mr.material;
+            
 
             //The Iron-Cross decals have weird UVs so we need to create custom meshes
             GameObject turret = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET").gameObject;
@@ -212,17 +265,17 @@ namespace CanadianLeopards
             maple_left.transform.position = turret.transform.position;
             Utilities.NewQuad(maple_left, cross_mat, maple);
             maple_left.transform.localScale = new Vector3(0.165f, 0.165f, 0.165f);
-            maple_left.transform.localPosition += new Vector3(-1.15f, 0.628f, 0.08f);
-            maple_left.transform.localRotation = Quaternion.Euler(new Vector3(3f, 0f, 63f));            
+            maple_left.transform.localPosition += new Vector3(-1.135f, 0.6f, -0.15f);
+            maple_left.transform.localRotation = Quaternion.Euler(new Vector3(0f, 10f, 60f));            
             RendererMaterial maple_left_rm = new RendererMaterial { Renderer = maple_left.GetComponent<MeshRenderer>() };
 
             GameObject maple_right = new GameObject("Mapleleaf_right");
             maple_right.transform.parent = turret.transform;
             maple_right.transform.position = turret.transform.position;
             Utilities.NewQuad(maple_right, cross_mat, maple);
-            maple_right.transform.localScale = new Vector3(0.165f, 0.165f, 0.165f);
-            maple_right.transform.localPosition += new Vector3(1.15f, 0.628f, 0.1f);
-            maple_right.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 62f));            
+            maple_right.transform.localScale = new Vector3(0.165f, 0.165f, 0.165f);            
+            maple_right.transform.localPosition += new Vector3(1.135f, 0.6f, -0.15f);
+            maple_right.transform.localRotation = Quaternion.Euler(new Vector3(0f, 170f, 60f));            
             RendererMaterial maple_right_rm = new RendererMaterial { Renderer = maple_right.GetComponent<MeshRenderer>() };
 
             FlammablesManager flamables = vehicle.GetComponent<FlammablesManager>();
@@ -256,30 +309,25 @@ namespace CanadianLeopards
             turret_numbers.RefreshDecals();
 
             GameObject numbers_go;
-            numbers_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/numbers").gameObject; 
+            numbers_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/NUMBERS").gameObject;
             MeshRenderer numbers = numbers_go.GetComponent<MeshRenderer>();
-            numbers.material.mainTexture = callsigns;
-            //numbers.material.color = new Vector4(1f, 1f, 1f, 1f);
-            //numbers.material.SetFloat("_Metallic", 0.698f);
-            //numbers.material.SetFloat("_Glossiness", 0.346f);
+            numbers.material.mainTexture = callsigns;            
 
-            numbers_go.transform.localPosition = new Vector3(-0.42f, 0.55f, -1.245f);  //moving turret numbers to back of the turret
-            numbers_go.transform.localRotation = Quaternion.Euler(270f, 270f, 0f);
-            numbers_go.transform.localScale = new Vector3(1f, 0.85f, 1f);
+            numbers_go.transform.localPosition = new Vector3(1.115f, 0.31f, -1.345f); //moving turret numbers to back of the turret
+            numbers_go.transform.localRotation = numbers_go.transform.localRotation * Quaternion.Euler(0f, 90f, 7f);
+            numbers_go.transform.localScale = new Vector3(0.48f, 0.48f, 0.4f);
+            
 
             Vector3[] num_vertices = numbers_go.GetComponent<MeshFilter>().sharedMesh.vertices;
             
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 21; i++)
             {
-                num_vertices[i] = new Vector3(0f, 0f, 0f);
+                num_vertices[i] = new Vector3(0f, 0f, 0f); //removing unneeded double image
             }
-            num_vertices[14] += new Vector3(0.13f, 0f, 0f); //changing angle of decal to play nice with the back of the turret
-            num_vertices[15] += new Vector3(0.13f, 0f, 0f);
-            num_vertices[18] += new Vector3(0.13f, 0f, 0f);
-            num_vertices[19] += new Vector3(0.13f, 0f, 0f);
-            num_vertices[22] += new Vector3(0.13f, 0f, 0f);
-            num_vertices[23] += new Vector3(0.13f, 0f, 0f);
-
+            num_vertices[26] += new Vector3(-0.03f, 0f, 0f); //flattening out the bottom-right corner
+            num_vertices[28] += new Vector3(-0.03f, 0f, 0f);
+            num_vertices[29] += new Vector3(-0.03f, 0f, 0f);
+            
             numbers_go.GetComponent<MeshFilter>().sharedMesh.vertices = num_vertices;
 
             GameObject hull_numbers = new GameObject("hull callsign"); //new number decal for the back of the hull
@@ -288,15 +336,16 @@ namespace CanadianLeopards
             hull_numbers.AddComponent<MeshRenderer>();
             hull_numbers.GetComponent<MeshRenderer>().material = numbers.material;
             hull_numbers.GetComponent<MeshFilter>().mesh = numbers_go.GetComponent<MeshFilter>().mesh;
-            hull_numbers.transform.position = active_hull.transform.position;
-            hull_numbers.transform.localPosition += new Vector3(-0.6f, 4.35f, 1.6f);
-            hull_numbers.transform.localRotation = Quaternion.Euler(355f, 0f, 270f);
-            hull_numbers.transform.localScale = new Vector3(1f, 1f, 1f);
+            hull_numbers.transform.position = active_hull.transform.position;            
+            hull_numbers.transform.localPosition += new Vector3(1.88f, 3.12f, -8.9f);
+            hull_numbers.transform.localRotation = Quaternion.Euler(0f, 89f, -16f);
+            hull_numbers.transform.localScale = new Vector3(1f, 1f, 1.1f);
+            
 
             if (position_in_platoon == 0) //centers decals for troop-leaders
-            {
-                numbers_go.transform.localPosition += new Vector3(0.105f, 0f, 0f);
-                hull_numbers.transform.localPosition += new Vector3(0.1f, 0f, 0f);
+            {                
+                numbers_go.transform.localPosition += new Vector3(0.07f, 0f, 0f);
+                hull_numbers.transform.localPosition += new Vector3(0.2f, 0f, 0f);                
             }
 
             if (CanadianLeopardsClass.additional_decals.Value)
@@ -306,25 +355,25 @@ namespace CanadianLeopards
                 hull_tac_front.transform.parent = active_hull.transform;
                 hull_tac_front.transform.position = active_hull.transform.position;
                 Utilities.NewQuad(hull_tac_front, numbers.material, tac);
-                hull_tac_front.transform.localPosition += new Vector3(-0.75f, -1.15f, 1.2f);
-                hull_tac_front.transform.localRotation = Quaternion.Euler(new Vector3(310f, 0f, 180f));
-                hull_tac_front.transform.localScale = new Vector3(0.1f, 0.1f, 0.066f);
+                hull_tac_front.transform.localPosition += new Vector3(-1.45f, 2.4f, 2.25f);
+                hull_tac_front.transform.localRotation = Quaternion.Euler(new Vector3(330f, 180f, 0f));
+                hull_tac_front.transform.localScale = new Vector3(0.25f, 0.25f, 0.18f);                
 
                 GameObject hull_tac_rear = new GameObject("tactical sign rear");
                 hull_tac_rear.transform.parent = active_hull.transform;
                 hull_tac_rear.transform.position = active_hull.transform.position;
                 Utilities.NewQuad(hull_tac_rear, numbers.material, tac);
-                hull_tac_rear.transform.localPosition += new Vector3(-0.88f, 5.418f, 1.4f);
-                hull_tac_rear.transform.localRotation = Quaternion.Euler(new Vector3(348f, 0f, 0f));
-                hull_tac_rear.transform.localScale = new Vector3(0.1f, 0.1f, 0.066f);                
+                hull_tac_rear.transform.localPosition += new Vector3(-1.78f, 2.8f, -10.85f);
+                hull_tac_rear.transform.localRotation = Quaternion.Euler(new Vector3(-100f, 0f, 0f));
+                hull_tac_rear.transform.localScale = new Vector3(0.2f, 0.2f, 0.14f);                
 
                 GameObject mlc_decal = new GameObject("MLC decal");
                 mlc_decal.transform.parent = active_hull.transform;
                 mlc_decal.transform.position = active_hull.transform.position;
                 Utilities.NewQuad(mlc_decal, numbers.material, mlc);
-                mlc_decal.transform.localPosition += new Vector3(0.84f, -0.62f, 1.48f);
-                mlc_decal.transform.localRotation = Quaternion.Euler(new Vector3(306f, 0f, 180f));
-                mlc_decal.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                mlc_decal.transform.localPosition += new Vector3(1.6f, 3f, 1.15f);
+                mlc_decal.transform.localRotation = Quaternion.Euler(new Vector3(330f, 180f, 0f));
+                mlc_decal.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);                
             }
             Utilities.Log("Conversions complete on " + vehicle_go.name);
         }
