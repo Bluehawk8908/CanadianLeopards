@@ -47,7 +47,7 @@ This mod does not copy or incorporate any material wholesale from other modders 
 1.5.1 - Compatibility patch for GHPC 20260814  
 1.6 - C6 (FN MAG) model to replace M240C  
 1.7 - Updated GPS reticle and auto-lead behaviour  
-1.7.1 - Added configuration options to omit certain Leopard variants from conversion
+1.7.1 - Added configuration options to omit certain Leopard variants from conversion  
 1.8 - Compatibility patch for GHPC 20261014, and Leopard C2s added
  
 ![Infantry on the move](https://i.imgur.com/XB1gVrA.jpeg)  
