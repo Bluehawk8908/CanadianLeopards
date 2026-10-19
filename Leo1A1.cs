@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using TMPro;
 using GHPC;
 using GHPC.Vehicle;
@@ -10,9 +10,6 @@ using GHPC.Effects;
 using GHPC.Effects.Voices;
 using GHPC.AI.Platoons;
 using GHPC.Utility;
-using System.Collections.Generic;
-using System.Collections;
-using System.IO;
 
 namespace CanadianLeopards
 {
@@ -58,6 +55,8 @@ namespace CanadianLeopards
 
             //Importing the EMES-15 sight from the Leo2 and jury-rigging it into a EMES-18
             GameObject new_optic = GameObject.Instantiate(CanadianLeopardsClass.emes15, vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/"));
+            Object.Destroy(new_optic.GetComponent<FireControlSystem>());
+            Object.Destroy(new_optic.transform.Find("Optic").gameObject);
             new_optic.name = "EMES-18";
             GameObject emes15_canvas = new_optic.transform.Find("EMES-15 canvas").gameObject;            
             GameObject lrf_holder = new GameObject("Laser Rangefinder");            
@@ -156,7 +155,7 @@ namespace CanadianLeopards
 
             //Augmenting the reticle in the primary sight
             ReticleMesh reticle_mesh = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS/Reticle Mesh").GetComponent<ReticleMesh>();
-            reticle_mesh.reticleSO.lights[0].color = new Reticle.RGB(8f, 0f, 0f, true);
+            reticle_mesh.reticleSO.lights[0].color = new Reticle.RGB(4f, 0f, 0f, true);
             ReticleTree.Angular design = reticle_mesh.reticleSO.planes[0].elements[0] as ReticleTree.Angular;
             if (design.elements.Count == 14) {
                 ReticleTree.Circle circle = new ReticleTree.Circle(position: new Vector2(0f, 0f), degrees: 0f, radius: 0.25f, thickness: 0.05f, iterations: 12);
