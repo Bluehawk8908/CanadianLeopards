@@ -36,18 +36,28 @@ namespace CanadianLeopards
 
             Transform gunsight_cam = weapon_scripts.transform.Find("GUNSIGHT CAM 2");
             gunsight_cam.localPosition = new Vector3(0.1423f, 2.5385f, 0.373f);
-
+            ammoFeed.AmmoTypeInBreech = cal50.ReadyRack.ClipTypes[0].MinimalPattern[0].AmmoType;
             ammoRack.ClipTypes = cal50.ReadyRack.ClipTypes;
             List<AmmoType.AmmoClip> storedClips = new List<AmmoType.AmmoClip>();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 9; i++)
             {
                 storedClips.Add(ammoRack.ClipTypes[0]);
             }
             ammoRack.StoredClips = storedClips;
-            ammoFeed._totalCycleTime = cal50.TotalCycleTime;            
-            ammoFeed._feedClipMain = cal50.LoadedClip; //may need fixing            
+
+            Queue<AmmoType> firstBelt = new Queue<AmmoType>();
+            for (int i = 0; i < 20; i++) //preps a 100-round belt of 12.7 for the weapon's first "clip"
+            {
+                for (int j = 0; j < 5; j++) 
+                { 
+                    firstBelt.Enqueue(ammoRack.ClipTypes[0].MinimalPattern[j].AmmoType);
+                }
+            }
+            firstBelt.Dequeue(); //removes one round from belt, since one is "InBreech"
+            ammoFeed._feedClipMain = firstBelt;           
             ammoFeed.QueuedClipType = ammoRack.ClipTypes[0];            
             ammoFeed.LoadedClipType = ammoRack.ClipTypes[0];
+            ammoFeed._totalCycleTime = 0.1091f;
 
             GameObject gunner = vehicle_go.transform.Find("M113G_rig/HULL/Turret ring").GetComponent<LateFollowTarget>().LateFollowers[0].transform.Find("Commander").gameObject;            
             SkinnedMeshRenderer helmet = gunner.transform.Find("BLU_FAZ63_OLIVE/helmet").GetComponent<SkinnedMeshRenderer>();            
