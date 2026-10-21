@@ -138,7 +138,10 @@ namespace CanadianLeopards
             indexer.MZ = symbolMZ;
             indexer.COAX = symbolCOAX;
 
-            //Disabling PZB-200 and spotlight            
+            //Disabling PZB-200 and spotlight
+            CameraSlot auxCam = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/Mantlet/--Gun Scripts--/Aux sight TZF1A").GetComponent<CameraSlot>();
+            auxCam.LinkedNightSight = nightCam;
+            
             vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/Mantlet/searchlight closed").gameObject.SetActive(false);
             vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/Mantlet/searchlight open").gameObject.SetActive(false);
             vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/searchlight cord").gameObject.SetActive(false);
