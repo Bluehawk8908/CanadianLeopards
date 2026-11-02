@@ -380,6 +380,8 @@ namespace CanadianLeopards
                 if (CanadianLeopardsClass.leo2a4_camo.Value == 2 && common2a4Mat.GetFloat("_CamoAmount") > 0.5f) { 
                     Utilities.NewQuad(chevron_hleft, numbers.GetComponent<MeshRenderer>().material, chevron_black); }
                 else { Utilities.NewQuad(chevron_hleft, numbers.GetComponent<MeshRenderer>().material, chevron); }
+                Material chevMat = chevron_hleft.GetComponent<MeshRenderer>().material;
+                chevMat.SetFloat("_Glossiness", 0f);
                 chevron_hleft.transform.localScale = new Vector3(0.3f, 0.3f, 0.2f);
                 chevron_hleft.transform.localPosition = new Vector3(-1.88f, 0.28f, 1.62f);
                 chevron_hleft.transform.localRotation = Quaternion.Euler(new Vector3(270f, 90f, 0f));                
@@ -388,8 +390,8 @@ namespace CanadianLeopards
                 chevron_hright.transform.parent = vehicle_go.transform.Find("leo2_rig/hull");
                 chevron_hright.transform.position = vehicle_go.transform.Find("leo2_rig/hull").position;
                 if (CanadianLeopardsClass.leo2a4_camo.Value == 2 && common2a4Mat.GetFloat("_CamoAmount") > 0.5f) { 
-                    Utilities.NewQuad(chevron_hright, numbers.GetComponent<MeshRenderer>().material, chevron_black); }
-                else { Utilities.NewQuad(chevron_hright, numbers.GetComponent<MeshRenderer>().material, chevron); }
+                    Utilities.NewQuad(chevron_hright, chevMat, chevron_black); }
+                else { Utilities.NewQuad(chevron_hright, chevMat, chevron); }
                 chevron_hright.transform.localScale = new Vector3(0.3f, 0.3f, 0.2f);
                 chevron_hright.transform.localPosition = new Vector3(1.88f, 0.28f, 1.64f);
                 chevron_hright.transform.localRotation = Quaternion.Euler(new Vector3(270f, 270f, 0f));                
@@ -398,8 +400,8 @@ namespace CanadianLeopards
                 chevron_tleft.transform.parent = markings;
                 chevron_tleft.transform.position = markings.position;
                 if (CanadianLeopardsClass.leo2a4_camo.Value == 2 && common2a4Mat.GetFloat("_CamoAmount") > 0.5f) {
-                    Utilities.NewQuad(chevron_tleft, numbers.GetComponent<MeshRenderer>().material, chevron_black); }
-                else { Utilities.NewQuad(chevron_tleft, numbers.GetComponent<MeshRenderer>().material, chevron); }
+                    Utilities.NewQuad(chevron_tleft, chevMat, chevron_black); }
+                else { Utilities.NewQuad(chevron_tleft, chevMat, chevron); }
                 chevron_tleft.transform.localScale = new Vector3(0.25f, 0.25f, 0.18f);
                 chevron_tleft.transform.localPosition = new Vector3(-1.23f, 1.82f, 0.55f);
                 chevron_tleft.transform.localRotation = Quaternion.Euler(new Vector3(270f, 90f, 0f));                
@@ -408,8 +410,8 @@ namespace CanadianLeopards
                 chevron_tright.transform.parent = markings;
                 chevron_tright.transform.position = markings.position;
                 if (CanadianLeopardsClass.leo2a4_camo.Value == 2 && common2a4Mat.GetFloat("_CamoAmount") > 0.5f) {
-                    Utilities.NewQuad(chevron_tright, numbers.GetComponent<MeshRenderer>().material, chevron_black); }
-                else { Utilities.NewQuad(chevron_tright, numbers.GetComponent<MeshRenderer>().material, chevron); }
+                    Utilities.NewQuad(chevron_tright, chevMat, chevron_black); }
+                else { Utilities.NewQuad(chevron_tright, chevMat, chevron); }
                 chevron_tright.transform.localScale = new Vector3(0.25f, 0.25f, 0.18f);
                 chevron_tright.transform.localPosition = new Vector3(1.32f, 1.85f, 0.4f);
                 chevron_tright.transform.localRotation = Quaternion.Euler(new Vector3(270f, 270f, 0f));
@@ -423,7 +425,6 @@ namespace CanadianLeopards
                 ChevronsGizmo chevronsGizmo = vehicle_go.AddComponent<ChevronsGizmo>();
                 chevronsGizmo.FlameManager = vehicle_go.GetComponent<FlammablesManager>();
                 chevronsGizmo.Chevrons = chevrons;
-
             }
 
             //C-tech armour upgrades
@@ -446,6 +447,8 @@ namespace CanadianLeopards
                 .transform.Find("LEO2_armour_turret/turret armour").gameObject;
             GameObject hullArmours = vehicle_go.GetComponent<LateFollowTarget>().LateFollowers[0]
                 .transform.Find("LEO2_armour_hull").gameObject;
+            GameObject mantletArmour = turret.Find("mantlet").GetComponent<LateFollowTarget>().LateFollowers[0]
+                .transform.Find("LEO2_armour_turret/mantlet armour").gameObject;
             Material aarLighterBlue = new Material(Shader.Find("Standard"));
             aarLighterBlue.color = new Color(0f, 0.6325f, 1f, 0.4f);
             aarLighterBlue.renderQueue = 3000;
@@ -465,7 +468,8 @@ namespace CanadianLeopards
                     hullArmours.transform.Find("lower glacis array").GetComponent<VariableArmor>(),
                     hullArmours.transform.Find("upper glacis array").GetComponent<VariableArmor>(),
                     hullArmours.transform.Find("front left array").GetComponent<VariableArmor>(),
-                    hullArmours.transform.Find("front right array").GetComponent<VariableArmor>() };
+                    hullArmours.transform.Find("front right array").GetComponent<VariableArmor>(),
+                    mantletArmour.transform.Find("mantlet").GetComponent<VariableArmor>()};
                     
                 foreach (var compBlock in compBlocks)
                 {
