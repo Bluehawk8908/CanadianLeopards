@@ -222,7 +222,7 @@ namespace CanadianLeopards
                 texture_bundle.Unload(false);
             }
         }
-        public static Texture2D FetchTex(int x, int y, string path)
+        public static Texture2D FetchTex(int x, int y, string path) //no longer used, kept for quick testing
         {
             Texture2D temp = new Texture2D(x, y);
             try
@@ -234,7 +234,7 @@ namespace CanadianLeopards
             return temp;
         }
 
-        public static Texture2D FetchTex(int x, int y, string path, bool linear)
+        public static Texture2D FetchTex(int x, int y, string path, bool linear) //this overload is for handling non-color maps like normals and specular
         {
             Texture2D temp = new Texture2D(x, y, TextureFormat.DXT5, true, linear);
             try
