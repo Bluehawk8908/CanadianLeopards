@@ -225,6 +225,8 @@ namespace CanadianLeopards
                 case 2:
                     AmmoSwaps.AmericanLoad(loadout_manager);
                     break;
+                case 3:
+                    break;
                 default:
                     Utilities.Log("Unknown value for ammo loadout, using mission defaults");
                     break;
