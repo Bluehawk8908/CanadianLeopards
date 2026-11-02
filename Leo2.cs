@@ -338,7 +338,7 @@ namespace CanadianLeopards
                 flutCon._flutterRenderersParents = transList;
                 flutCon._maxVelocity = 25f;
 
-                if (vehicle.UniqueName != "LEO2" && CanadianLeopardsClass.leo2a4_camo.Value == 2)
+                if (common2a4Mat.GetFloat("_CamoAmount") > 0.4f && CanadianLeopardsClass.leo2a4_camo.Value == 2)
                 {
                     newNet.transform.Find("default").GetComponent<MeshRenderer>().material.SetTexture("_basecolour", tan_net);
                     turret.Find("mantlet/net_gun").GetComponent<MeshRenderer>().material.SetTexture("_basecolour", tan_net);
@@ -448,7 +448,7 @@ namespace CanadianLeopards
             GameObject hullArmours = vehicle_go.GetComponent<LateFollowTarget>().LateFollowers[0]
                 .transform.Find("LEO2_armour_hull").gameObject;
             GameObject mantletArmour = turret.Find("mantlet").GetComponent<LateFollowTarget>().LateFollowers[0]
-                .transform.Find("LEO2_armour_turret/mantlet armour").gameObject;
+                .transform.Find("mantlet armour").gameObject;
             Material aarLighterBlue = new Material(Shader.Find("Standard"));
             aarLighterBlue.color = new Color(0f, 0.6325f, 1f, 0.4f);
             aarLighterBlue.renderQueue = 3000;
