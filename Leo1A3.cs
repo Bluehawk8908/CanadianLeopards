@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using GHPC;
 using GHPC.Vehicle;
 using GHPC.Weapons;
@@ -14,11 +14,24 @@ namespace CanadianLeopards
 {
     public class Leo1A3
     {
-        public static void Convert(Vehicle vehicle, GameObject american_crew_voice, ReticleMesh.CachedReticle crosshair, GameObject fn_mag, 
-                Texture2D A3_base, Texture2D A3_camomask, Texture2D maple, Texture2D callsigns, Texture2D tac, Texture2D mlc)
+        public static void Convert(Vehicle vehicle)
         {
             GameObject vehicle_go = vehicle.gameObject;
             vehicle_go.AddComponent<CanLepConverted>();
+
+            GameObject american_crew_voice = Utilities.american_crew_voice;
+            ReticleMesh.CachedReticle crosshair = Utilities.marder_crosshair;
+            GameObject fn_mag = Utilities.fn_mag;
+            GameObject fn_mag_aar = Utilities.fn_mag_aar;
+            GameObject new_gps_aar = Utilities.new_gps_aar;
+            Texture2D A3_base = Utilities.A3_base;
+            Texture2D A3_camomask = Utilities.A3_camomask;
+            Texture2D maple = (CanadianLeopardsClass.decals_outlined.Value) ? Utilities.maple : Utilities.maple_black;
+            Texture2D callsigns = (CanadianLeopardsClass.decals_outlined.Value) ? Utilities.callsigns : Utilities.callsigns_black;
+            Texture2D panther = Utilities.panther;
+            Texture2D tac = Utilities.tac;
+            Texture2D mlc = Utilities.mlc46;            
+
             vehicle._friendlyName = "Leopard C1";  //New display name
 
             vehicle.transform.Find("DE Tank Voice").gameObject.SetActive(false); //Adding US Voices
@@ -39,11 +52,13 @@ namespace CanadianLeopards
             lrf_holder.transform.SetParent(vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS"));
             lrf_holder.transform.localPosition = new Vector3(0f, 0f, 0.5f);
             lrf_holder.transform.localRotation = Quaternion.identity;
-            GHPC.Equipment.DestructibleComponent laser_dest = lrf_holder.AddComponent<GHPC.Equipment.DestructibleComponent>();
+            GameObject gps_aar = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET").GetComponent<LateFollowTarget>().LateFollowers[0]
+                .gameObject.transform.Find("LEO1_AAR_turret/TEM-2").gameObject;
+            GHPC.Equipment.DestructibleComponent laser_dest = gps_aar.AddComponent<GHPC.Equipment.DestructibleComponent>();
             laser_dest._health = 5f;
             laser_dest._fullHealth = 5f;
             laser_dest._pressureTolerance = 1f;
-            laser_dest._name = "Laser Rangefinder";
+            laser_dest._name = "gunner's primary sight";            
 
             fcs.LaserAim = LaserAimMode.ImpactPoint;
             fcs.LaserComponent = laser_dest;
@@ -89,6 +104,12 @@ namespace CanadianLeopards
                 vehicle.transform.Find("LEO1A3_mesh/PERI R12").gameObject.SetActive(false);                
             }
             sabca_cam.NightSightAtNightOnly = false;
+
+            DamageGizmo gizmo = vehicle_go.AddComponent<DamageGizmo>();
+            gizmo.component = laser_dest;
+            gizmo.fcs = fcs;
+            gizmo.daySight = sabca_cam;
+            gizmo.nightSight = fcs.NightOptic.slot;
 
             //Changing the reticle in the primary sight
             GameObject reticle_mesh_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/--Turret Scripts--/Sights/GPS/Reticle Mesh").gameObject;
@@ -156,34 +177,64 @@ namespace CanadianLeopards
 
             maingun.WeaponData.FriendlyName = "105mm Gun L7A4 L/52";
 
+            GameObject turret_aar = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/").GetComponent<LateFollowTarget>().LateFollowers[0]
+                .transform.Find("LEO1_AAR_turret").gameObject;
+            GameObject newGps_container = GameObject.Instantiate(new_gps_aar, turret_aar.transform);
+            newGps_container.transform.localPosition = new Vector3(0.1f, 2.1f, 1.01f);
+            newGps_container.transform.localRotation = Quaternion.Euler(new Vector3(0f, 270f, 0f));
+            newGps_container.transform.localScale = new Vector3(0.82f, 0.82f, 0.82f);
+            GameObject oldSight_aar = turret_aar.transform.Find("TEM-2").gameObject;
+            GameObject newGps_aar = newGps_container.transform.Find("default").gameObject;
+            newGps_aar.layer = 8;
+            newGps_aar.GetComponent<MeshRenderer>().material = oldSight_aar.GetComponent<AarVisual>().AarMaterial; //purely cosmetic
+            AarVisual newGps_aarVis = newGps_aar.AddComponent<AarVisual>();
+            newGps_aarVis.AarMaterial = newGps_aar.GetComponent<MeshRenderer>().material;
+            oldSight_aar.GetComponent<AarVisual>()._renderers = new System.Collections.Generic.List<Renderer> { }; //we want to retain the collider but turn off the visual mesh
+
             //Replacing Coax MG
             coax.Name = "7.62mm machine gun C6";
             AmmoFeed coax_ammo = coax.Weapon.Feed;
             coax_ammo._totalCycleTime = 0.08f;
             coax.Weapon.WeaponSound.LoopEventPath = "event:/Weapons/MG_m240_750rmp";
+            GameObject mantletAAR = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/1A3 mantlet").GetComponent<LateFollowTarget>().LateFollowers[0].gameObject;
+            GameObject fnMag_aar_holder = GameObject.Instantiate(fn_mag_aar, mantletAAR.transform.Find("gun mount")); 
+            fnMag_aar_holder.transform.localPosition = new Vector3(-0.45f, 0.58f, -0.23f);
+            GameObject mg3_aar = mantletAAR.transform.Find("gun mount/MG3").gameObject;
+            GameObject fnMag_aar = fnMag_aar_holder.transform.Find("default").gameObject;
+            fnMag_aar.layer = 8;
+            fnMag_aar.GetComponent<MeshRenderer>().material = mg3_aar.GetComponent<AarVisual>().AarMaterial;
+            AarVisual fnMag_aarVis = fnMag_aar.AddComponent<AarVisual>();
+            fnMag_aarVis.AarMaterial = fnMag_aar.GetComponent<MeshRenderer>().material;
+            mg3_aar.GetComponent<AarVisual>()._renderers = new System.Collections.Generic.List<Renderer> { };
 
             //Replacing loader-hatch MG
             Transform loader_station = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/lafette002");
             GameObject fnMag = GameObject.Instantiate(fn_mag, loader_station);
             fnMag.transform.localRotation = Quaternion.Euler(new Vector3(0f, 0f, 180f));
             fnMag.transform.localPosition = new Vector3(0f, 0.05f, -0.08f);
-            loader_station.transform.Find("MG004").gameObject.SetActive(false);                     
+            loader_station.transform.Find("MG004").gameObject.SetActive(false);
 
             //Configuring Ammunition
-            string ammo_loadout = CanadianLeopardsClass.ammo_loadout.Value;
-            if (ammo_loadout != "German" || ammo_loadout != "german" || ammo_loadout != "GERMAN")
+            int ammo_loadout = CanadianLeopardsClass.ammo_loadout.Value;
+            LoadoutManager loadout_manager = vehicle.GetComponent<LoadoutManager>();
+            switch (ammo_loadout)
             {
-                LoadoutManager loadout_manager = vehicle.GetComponent<LoadoutManager>();
-
-                if (ammo_loadout == "historical" || ammo_loadout == "Historical" || (ammo_loadout == "HISTORICAL")) { AmmoSwaps.HistoricalLoad(maingun, loadout_manager); }
-                else if (ammo_loadout == "American" || ammo_loadout == "american" || ammo_loadout == "AMERICAN") { AmmoSwaps.AmericanLoad(maingun, loadout_manager); }
-                else { Utilities.Log("Unknown value for ammo loadout, using mission defaults"); }
-            }
+                case 1:
+                    AmmoSwaps.HistoricalC1(loadout_manager);
+                    break;
+                case 2:
+                    AmmoSwaps.AmericanLoad(loadout_manager);
+                    break;
+                default:
+                    Utilities.Log("Unknown value for ammo loadout, using mission defaults");
+                    break;
+            }            
 
             //Texture cosmetics
-            GameObject de_markings;
-            de_markings = vehicle.transform.Find("LEO1A3_markings").gameObject;           
-            de_markings.SetActive(false);
+            GameObject de_markings = vehicle.transform.Find("LEO1A3_markings").gameObject;           
+            de_markings.transform.Find("unit tactical A3").gameObject.SetActive(false);
+            de_markings.transform.Find("license number A3").localPosition = new Vector3(0.07f, 1.0891f, 0f);
+
             GameObject cross = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/kreuz").gameObject;
             Material cross_mat = cross.GetComponent<MeshRenderer>().material;
             cross.SetActive(false);
@@ -243,9 +294,11 @@ namespace CanadianLeopards
             }
             MergedVehicleNumberControl[] components = de_markings.GetComponents<MergedVehicleNumberControl>();
             MergedVehicleNumberControl turret_numbers = new MergedVehicleNumberControl();
+            MergedVehicleNumberControl cfr_numbers = new MergedVehicleNumberControl();
             foreach (var mvnc in components)
             {
                 if (mvnc.Type == VehicleDecalType.UnitNumber) { turret_numbers = mvnc; }
+                if (mvnc.Type == VehicleDecalType.LicensePlate) { cfr_numbers = mvnc; }
             }
             if (turret_numbers._allValues[0] == 9) { turret_numbers._allValues[0] = 1; }
             else if (turret_numbers._allValues[0] > 4) { turret_numbers._allValues[0] -= 4; } //5-8 get remapped onto 1-4
@@ -258,10 +311,7 @@ namespace CanadianLeopards
             GameObject numbers_go;
             numbers_go = vehicle.transform.Find("LEO1A1A1_rig/HULL/TURRET/numbers").gameObject; 
             MeshRenderer numbers = numbers_go.GetComponent<MeshRenderer>();
-            numbers.material.mainTexture = callsigns;
-            //numbers.material.color = new Vector4(1f, 1f, 1f, 1f);
-            //numbers.material.SetFloat("_Metallic", 0.698f);
-            //numbers.material.SetFloat("_Glossiness", 0.346f);
+            numbers.material.mainTexture = callsigns;            
 
             numbers_go.transform.localPosition = new Vector3(-0.42f, 0.55f, -1.245f);  //moving turret numbers to back of the turret
             numbers_go.transform.localRotation = Quaternion.Euler(270f, 270f, 0f);
@@ -299,6 +349,30 @@ namespace CanadianLeopards
                 hull_numbers.transform.localPosition += new Vector3(0.1f, 0f, 0f);
             }
 
+            cfr_numbers._allValues[0] = 7; //CFR numbers for Leo1 hulls are 78-85XXX
+            cfr_numbers._allValues[1] = 8;
+            cfr_numbers._allValues[2] = 36; //hyphen
+            cfr_numbers._allValues[3] = 8;
+            cfr_numbers._allValues[4] = 5;
+            if (cfr_numbers._allValues[5] > 1) cfr_numbers._allValues[5] = 1;
+            cfr_numbers.RefreshDecals();
+            Material cfr_mat = de_markings.transform.Find("license number A3").GetComponent<MeshRenderer>().material;
+            cfr_mat.SetVector("_fieldcolour", new Vector4(0.1f, 0.1f, 0.1f, 0f));
+            cfr_mat.SetVector("_numeralcolours", new Vector4(0.1f, 0.1f, 0f, 0f));
+
+            int random = Random.Range(0, 200);
+            if (random == 87)
+            {
+                GameObject cat87 = new GameObject("CAT 87");
+                cat87.transform.parent = turret.transform;
+                cat87.transform.position = turret.transform.position;
+                cat87.transform.localRotation = Quaternion.Euler(new Vector3(270f, 115f, 0f));
+                cat87.transform.localPosition = new Vector3(-1.02f, 0.25f, 0.65f);
+                cat87.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+                Utilities.NewQuad(cat87, cross_mat, panther);
+                cat87.GetComponent<MeshRenderer>().material.SetFloat("_Cutoff", 0.2f);
+            }
+            
             if (CanadianLeopardsClass.additional_decals.Value)
             {
                 //NATO map symbol type decal, front and back
@@ -309,6 +383,7 @@ namespace CanadianLeopards
                 hull_tac_front.transform.localPosition += new Vector3(-0.75f, -1.15f, 1.2f);
                 hull_tac_front.transform.localRotation = Quaternion.Euler(new Vector3(310f, 0f, 180f));
                 hull_tac_front.transform.localScale = new Vector3(0.1f, 0.1f, 0.066f);
+                hull_tac_front.GetComponent<MeshRenderer>().material.SetFloat("_Cutoff", 0.25f);
 
                 GameObject hull_tac_rear = new GameObject("tactical sign rear");
                 hull_tac_rear.transform.parent = active_hull.transform;
@@ -316,7 +391,8 @@ namespace CanadianLeopards
                 Utilities.NewQuad(hull_tac_rear, numbers.material, tac);
                 hull_tac_rear.transform.localPosition += new Vector3(-0.88f, 5.418f, 1.4f);
                 hull_tac_rear.transform.localRotation = Quaternion.Euler(new Vector3(348f, 0f, 0f));
-                hull_tac_rear.transform.localScale = new Vector3(0.1f, 0.1f, 0.066f);                
+                hull_tac_rear.transform.localScale = new Vector3(0.1f, 0.1f, 0.066f);
+                hull_tac_rear.GetComponent<MeshRenderer>().material.SetFloat("_Cutoff", 0.25f);
 
                 GameObject mlc_decal = new GameObject("MLC decal");
                 mlc_decal.transform.parent = active_hull.transform;
