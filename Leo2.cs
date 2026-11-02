@@ -285,7 +285,9 @@ namespace CanadianLeopards
             turret_numbers.RefreshDecals();
 
             GameObject numbers = vehicle_go.transform.Find("leo2_rig/hull/turret/LEO2_markings/numbers").gameObject;
-            if (vehicle.UniqueName == "LEO2") { numbers.GetComponent<MeshRenderer>().material.mainTexture = callsigns; }
+            if ((vehicle.UniqueName == "LEO2" && CanadianLeopardsClass.decals_outlined.Value) || 
+                (vehicle.UniqueName != "LEO2" && CanadianLeopardsClass.leo2a4_callsigns.Value == 1)) 
+                { numbers.GetComponent<MeshRenderer>().material.mainTexture = callsigns; }
             else { 
                 numbers.GetComponent<MeshRenderer>().material.mainTexture = callsigns_black;
                 numbers.GetComponent<MeshRenderer>().material.SetVector("_Color", new Vector4(1f, 1f, 1f, 1f));
@@ -353,8 +355,8 @@ namespace CanadianLeopards
                 GameObject mlc_decal = new GameObject("MLC decal");
                 mlc_decal.transform.parent = vehicle_go.transform.Find("leo2_rig/hull");
                 mlc_decal.transform.position = vehicle_go.transform.Find("leo2_rig/hull").position;
-                if (CanadianLeopardsClass.leo2_mlc.Value == 1) { Utilities.NewQuad(mlc_decal, numbers.GetComponent<MeshRenderer>().material, mlc60); }
-                else { Utilities.NewQuad(mlc_decal, numbers.GetComponent<MeshRenderer>().material, mlc60_black); }
+                if (CanadianLeopardsClass.leo2_mlc.Value == 2) { Utilities.NewQuad(mlc_decal, numbers.GetComponent<MeshRenderer>().material, mlc60_black); }
+                else { Utilities.NewQuad(mlc_decal, numbers.GetComponent<MeshRenderer>().material, mlc60); }
                 mlc_decal.transform.localPosition += new Vector3(1.41f, 0.385f, 3.58f);
                 mlc_decal.transform.localRotation = Quaternion.Euler(new Vector3(300f, 180f, 0f));
                 mlc_decal.transform.localScale = new Vector3(0.08f, 0.08f, 0.08f);
@@ -367,7 +369,7 @@ namespace CanadianLeopards
                 (vehicle.UniqueName != "LEO2" && CanadianLeopardsClass.leo2a4_tactical.Value == 1)) 
                 { Utilities.NewQuad(tactical, numbers.GetComponent<MeshRenderer>().material, tac); }
             else if (vehicle.UniqueName != "LEO2" && CanadianLeopardsClass.leo2a4_tactical.Value == 2) 
-                { Utilities.NewQuad(tactical, numbers.GetComponent<MeshRenderer>().material, tac_generic); }
+                { Utilities.NewQuad(tactical, numbers.GetComponent<MeshRenderer>().material, tac_generic); } //if incorect value is entered in config, defaults to no symbol 
             tactical.transform.localPosition += new Vector3(-1.42f, 0.385f, 3.58f);
             tactical.transform.localRotation = Quaternion.Euler(new Vector3(300f, 180f, 0f));
             tactical.transform.localScale = new Vector3(0.08f, 0.08f, 0.07f);
@@ -467,14 +469,14 @@ namespace CanadianLeopards
                     turretArmours.transform.Find("cheek array right B").GetComponent<VariableArmor>(),
                     hullArmours.transform.Find("lower glacis array").GetComponent<VariableArmor>(),
                     hullArmours.transform.Find("upper glacis array").GetComponent<VariableArmor>(),
-                    hullArmours.transform.Find("front left array").GetComponent<VariableArmor>(),
-                    hullArmours.transform.Find("front right array").GetComponent<VariableArmor>(),
+                    hullArmours.transform.Find("sponson array left").GetComponent<VariableArmor>(),
+                    hullArmours.transform.Find("sponson array right").GetComponent<VariableArmor>(),
                     mantletArmour.transform.Find("mantlet").GetComponent<VariableArmor>()};
                     
                 foreach (var compBlock in compBlocks)
                 {
                     compBlock._armorType = ctechScriptable;
-                    compBlock.AverageRha += 400;
+                    compBlock.AverageRha += 250;
                     compBlock.Renderer.material = aarLighterBlue;
                     compBlock.gameObject.GetComponent<AarVisual>().AarMaterial = aarLighterBlue;                    
                 }
