@@ -11,9 +11,22 @@ namespace CanadianLeopards
 {
     public class M113
     {
-        public static void Convert(Vehicle vehicle, GameObject vehicle_go, AmmoFeed cal50, bool additional_decals, 
-            Texture2D mapleAPC, Texture2D canInf, Texture2D canInf_nm, Texture2D canInf_sm, Texture2D callsigns, Texture2D apc, Texture2D flag, Texture2D tacAPC, Texture2D mlcAPC) 
+        public static void Convert(Vehicle vehicle, GameObject vehicle_go) 
         {
+            vehicle_go.AddComponent<CanLepConverted>();
+
+            bool additional_decals = CanadianLeopardsClass.additional_decals.Value;
+            AmmoFeed cal50 = Utilities.cal50;
+            Texture2D mapleAPC = Utilities.maple_black;
+            Texture2D canInf = Utilities.canInf;
+            Texture2D canInf_nm = Utilities.canInf_nm;
+            Texture2D canInf_sm = Utilities.canInf_sm;
+            Texture2D callsigns = Utilities.callsigns_black;
+            Texture2D apc = Utilities.apc;
+            Texture2D flag = Utilities.flag;
+            Texture2D tacAPC = Utilities.tacAPC;
+            Texture2D mlcAPC = Utilities.mlcAPC;
+
             Transform M2_init = vehicle_go.transform.Find("M2HB_rig (1)");
             if (M2_init != null) { M2_init.gameObject.SetActive(true); }
             Transform M2HB_t = vehicle_go.transform.Find("M113G_rig/HULL/Turret ring/MG elevation/MG ball pivot AZ/MG ball pivot EL/M2HB_rig (1)");
@@ -133,8 +146,7 @@ namespace CanadianLeopards
             maple_left.transform.localPosition = new Vector3(-1.29f, 1.745f, 1.5f);
             maple_left.transform.localRotation = Quaternion.Euler(new Vector3(0f, 0f, 90f));
             maple_left.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
-            RendererMaterial maple_left_rm = new RendererMaterial();
-            maple_left_rm.Renderer = maple_left.GetComponent<MeshRenderer>();
+            RendererMaterial maple_left_rm = new RendererMaterial { Renderer = maple_left.GetComponent<MeshRenderer>() };            
             fm._scorchRendererMaterials.Add(maple_left_rm);            
 
             GameObject maple_right = new GameObject("maple_right");
@@ -143,8 +155,7 @@ namespace CanadianLeopards
             maple_right.transform.localPosition = new Vector3(1.29f, 1.745f, 1.5f);
             maple_right.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 90f));
             maple_right.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
-            RendererMaterial maple_right_rm = new RendererMaterial();
-            maple_right_rm.Renderer = maple_right.GetComponent<MeshRenderer>();
+            RendererMaterial maple_right_rm = new RendererMaterial { Renderer = maple_right.GetComponent<MeshRenderer>() };            
             fm._scorchRendererMaterials.Add(maple_right_rm);            
 
             GameObject flag_front = new GameObject("flag_front");
@@ -154,8 +165,7 @@ namespace CanadianLeopards
             flag_front.transform.localPosition = new Vector3(1.075f, 1.5f, 2.21f);
             flag_front.transform.localRotation = Quaternion.Euler(new Vector3(315f, 180f, 0f));
             flag_front.transform.localScale = new Vector3(0.08f, 1f, 0.045f);
-            RendererMaterial flag_front_rm = new RendererMaterial();
-            flag_front_rm.Renderer = flag_front.GetComponent<MeshRenderer>();
+            RendererMaterial flag_front_rm = new RendererMaterial { Renderer = flag_front.GetComponent<MeshRenderer>() };            
             fm._scorchRendererMaterials.Add(flag_front_rm);
 
             GameObject flag_rear = new GameObject("flag_rear");
@@ -164,12 +174,12 @@ namespace CanadianLeopards
             flag_rear.transform.localPosition = new Vector3(-1.05f, 1.5f, -1.91f);
             flag_rear.transform.localRotation = Quaternion.Euler(new Vector3(280f, 180f, 180f));
             flag_rear.transform.localScale = new Vector3(0.08f, 1f, 0.045f);
-            RendererMaterial flag_rear_rm = new RendererMaterial();
-            flag_rear_rm.Renderer = flag_rear.GetComponent<MeshRenderer>();
+            RendererMaterial flag_rear_rm = new RendererMaterial { Renderer = flag_rear.GetComponent<MeshRenderer>() };            
             fm._scorchRendererMaterials.Add(flag_rear_rm);
 
             if (additional_decals) {
-                cross.SetFloat("_Cutoff", 0.2f);
+                cross.SetFloat("_Cutoff", 0.25f);
+                cross.SetVector("_background", new Vector4(1.3f, 1.3f, 1.3f, 1f));
                 GameObject tac_front = new GameObject("tac_front");
                 tac_front.transform.parent = vehicle_go.transform;
                 Utilities.NewQuad(tac_front, cross, tacAPC);
@@ -177,8 +187,7 @@ namespace CanadianLeopards
                 tac_front.transform.localRotation = Quaternion.Euler(new Vector3(315f, 180f, 0f));
                 tac_front.transform.localScale = new Vector3(0.1f, 1f, 0.07f);
                 vehicle.transform.Find("M113G_mesh/low track links").gameObject.SetActive(false);
-                RendererMaterial tac_front_rm = new RendererMaterial();
-                tac_front_rm.Renderer = tac_front.GetComponent<MeshRenderer>();
+                RendererMaterial tac_front_rm = new RendererMaterial { Renderer = tac_front.GetComponent<MeshRenderer>() };                
                 fm._scorchRendererMaterials.Add(tac_front_rm);
 
                 GameObject tac_rear = new GameObject("tac_rear");
@@ -187,8 +196,7 @@ namespace CanadianLeopards
                 tac_rear.transform.localPosition = new Vector3(1.045f, 1.5f, -1.91f);
                 tac_rear.transform.localRotation = Quaternion.Euler(new Vector3(280f, 180f, 180f));
                 tac_rear.transform.localScale = new Vector3(0.1f, 1f, 0.07f);
-                RendererMaterial tac_rear_rm = new RendererMaterial();
-                tac_rear_rm.Renderer = tac_rear.GetComponent<MeshRenderer>();
+                RendererMaterial tac_rear_rm = new RendererMaterial { Renderer = tac_rear.GetComponent<MeshRenderer>() };                
                 fm._scorchRendererMaterials.Add(tac_rear_rm);
 
                 GameObject mlc = new GameObject("mlc");
@@ -209,7 +217,7 @@ namespace CanadianLeopards
             cupola.material.SetTexture("_Albedo", apc);  
 
             vehicle._friendlyName = "M113A1";
-            vehicle_go.AddComponent<CanLepConverted>();
+            Utilities.Log("Conversions complete on " + vehicle_go.name);
         }
     }
 }
