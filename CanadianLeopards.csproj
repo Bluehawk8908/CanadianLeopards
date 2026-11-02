@@ -95,10 +95,12 @@
   <ItemGroup>
     <Compile Include="CanadianLeopards.cs" />
     <Compile Include="Ammo.cs" />
+    <Compile Include="Infantry.cs" />
     <Compile Include="Leo1A1.cs" />
     <Compile Include="Leo1A3.cs" />
     <Compile Include="Leo2.cs" />
     <Compile Include="M113.cs" />
+    <Compile Include="Menu.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities.cs" />
   </ItemGroup>
