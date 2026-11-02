@@ -61,6 +61,7 @@ namespace CanadianLeopards
         public static MelonPreferences_Entry<bool> exclude_early_L2;
         public static MelonPreferences_Entry<bool> exclude_late_L2;
         public static MelonPreferences_Entry<int> leo2_mlc;
+        public static MelonPreferences_Entry<int> leo2a4_callsigns;
         public static MelonPreferences_Entry<int> leo2a4_tactical;
         public static MelonPreferences_Entry<int> leo2a4_camo;
         public static MelonPreferences_Entry<int> leo2a4_chevrons;
@@ -113,6 +114,9 @@ namespace CanadianLeopards
 
             leo2_mlc = cfg.CreateEntry<int>("Leopard 2 MLC decals", 1);
             leo2_mlc.Comment = "0 for NONE, 1 for black and white, 2 for hollow black";
+
+            leo2a4_callsigns = cfg.CreateEntry<int>("Leopard 2 callsigns", 1);
+            leo2a4_callsigns.Comment = "1 for black and white borders, 2 for solid black";
 
             leo2a4_tactical = cfg.CreateEntry<int>("Leopard 2A4 tactical unit symbols", 2);
             leo2a4_tactical.Comment = "0 for NONE, 1 for 4th CMBG, 2 for generic armoured unit";
