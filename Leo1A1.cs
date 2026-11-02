@@ -258,12 +258,14 @@ namespace CanadianLeopards
             //Configuring Ammunition
             int ammo_loadout = CanadianLeopardsClass.ammo_loadout.Value;
             LoadoutManager loadout_manager = vehicle.GetComponent<LoadoutManager>();
-            switch (ammo_loadout) {
+            switch (ammo_loadout) {                
                 case 1:
                     AmmoSwaps.HistoricalC2(loadout_manager);
                     break;
                 case 2: 
                     AmmoSwaps.AmericanLoad(loadout_manager);
+                    break;
+                case 3:
                     break;
                 default: 
                     Utilities.Log("Unknown value for ammo loadout, using mission defaults");
